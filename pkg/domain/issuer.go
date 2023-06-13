@@ -3,6 +3,7 @@ package domain
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -56,4 +57,15 @@ func (repo IssuerRepositoryDb) GetAll() ([]Issuer, error) {
 	}
 
 	return issuers, nil
+}
+
+func (repo IssuerRepositoryDb) UpdateBalance(id int, amount float64) error {
+	query := "UPDATE ISSUERS SET balance=balance+$1 WHERE ID=$2"
+
+	_, err := repo.db.Exec(context.Background(), query, amount, id)
+	if err != nil {
+		log.Println("Error updating issuer's balance : ", err)
+		return fmt.Errorf("Error updating issuer's balance : %v", err)
+	}
+	return nil
 }

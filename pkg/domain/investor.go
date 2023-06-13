@@ -61,3 +61,14 @@ func (repo InvestorRepositoryDb) GetAll() ([]Investor, error) {
 
 	return investors, nil
 }
+
+func (repo InvestorRepositoryDb) UpdateBalance(id int, amount float64) error {
+	query := "UPDATE INVESTORS SET balance=balance-$1 WHERE ID=$2"
+
+	_, err := repo.db.Exec(context.Background(), query, amount, id)
+	if err != nil {
+		log.Println("Error updating investors balance : ", err)
+		return fmt.Errorf("Error updating investor's balance : %v", err)
+	}
+	return nil
+}
