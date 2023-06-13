@@ -23,7 +23,7 @@ func NewInvestorRepositoryDb(dbclient *pgxpool.Pool) InvestorRepositoryDb {
 	return InvestorRepositoryDb{db: dbclient}
 }
 
-func (repo InvestorRepositoryDb) GetById(id int) (*Investor, error) {
+func (repo InvestorRepositoryDb) FindById(id int) (*Investor, error) {
 	query := "SELECT * FROM INVESTORS WHERE ID=$1"
 
 	var investor Investor
@@ -38,7 +38,7 @@ func (repo InvestorRepositoryDb) GetById(id int) (*Investor, error) {
 	return &investor, nil
 }
 
-func (repo InvestorRepositoryDb) GetAll() ([]Investor, error) {
+func (repo InvestorRepositoryDb) FindAll() ([]Investor, error) {
 	query := "SELECT * FROM INVESTORS"
 
 	investors := make([]Investor, 0)

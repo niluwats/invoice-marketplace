@@ -23,7 +23,7 @@ func NewIssuerRepositoryDb(dbclient *pgxpool.Pool) IssuerRepositoryDb {
 	return IssuerRepositoryDb{db: dbclient}
 }
 
-func (repo IssuerRepositoryDb) GetById(id int) (*Issuer, error) {
+func (repo IssuerRepositoryDb) FindById(id int) (*Issuer, error) {
 	query := "SELECT * FROM ISSUERS WHERE ID=$1"
 
 	var issuer Issuer
@@ -37,7 +37,7 @@ func (repo IssuerRepositoryDb) GetById(id int) (*Issuer, error) {
 	return &issuer, nil
 }
 
-func (repo IssuerRepositoryDb) GetAll() ([]Issuer, error) {
+func (repo IssuerRepositoryDb) FindAll() ([]Issuer, error) {
 	query := "SELECT * FROM ISSUERS"
 
 	issuers := make([]Issuer, 0)
