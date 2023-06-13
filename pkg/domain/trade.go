@@ -2,7 +2,7 @@ package domain
 
 import "time"
 
-type Bid struct {
+type Trade struct {
 	ID         int       `json:"id"`
 	InvoiceId  string    `json:"invoice_id"`
 	BidAmount  float64   `json:"bid_amount"`

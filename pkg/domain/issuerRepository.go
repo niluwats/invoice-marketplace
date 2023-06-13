@@ -1,7 +1,7 @@
 package domain
 
 type IssuerRepository interface {
-	GetById(id int) (*Issuer, error)
-	GetAll() ([]Issuer, error)
+	FindById(id int) (*Issuer, error)
+	FindAll() ([]Issuer, error)
 	UpdateBalance(id int, amount float64) error
 }

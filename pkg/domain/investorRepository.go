@@ -1,7 +1,7 @@
 package domain
 
 type InvestorRepository interface {
-	GetById(id int) (*Investor, error)
-	GetAll() ([]Investor, error)
+	FindById(id int) (*Investor, error)
+	FIndAll() ([]Investor, error)
 	UpdateBalance(id int, amount float64) error
 }

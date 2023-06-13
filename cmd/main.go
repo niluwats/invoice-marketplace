@@ -1,12 +1,7 @@
 package main
 
-import (
-	"fmt"
-
-	"github.com/niluwats/invoice-marketplace/pkg/db"
-)
+import "github.com/niluwats/invoice-marketplace/pkg/handlers"
 
 func main() {
-	dbClient := db.SetupDBConn()
-	fmt.Println(dbClient)
+	handlers.StartServer()
 }

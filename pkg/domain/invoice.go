@@ -40,7 +40,7 @@ func (repo InvoiceRepositoryDb) Insert(invoice Invoice) error {
 	return nil
 }
 
-func (repo InvoiceRepositoryDb) GetInvoice(id int) (*Invoice, error) {
+func (repo InvoiceRepositoryDb) FindById(id int) (*Invoice, error) {
 	query := "SELECT * FROM INVOICE WHERE ID=$1"
 
 	row := repo.db.QueryRow(context.Background(), query, id)
