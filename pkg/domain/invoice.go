@@ -39,3 +39,37 @@ func (repo InvoiceRepositoryDb) Insert(invoice Invoice) error {
 	}
 	return nil
 }
+
+func (repo InvoiceRepositoryDb) GetInvoice(id int) (*Invoice, error) {
+	query := "SELECT * FROM INVOICE WHERE ID=$1"
+
+	row := repo.db.QueryRow(context.Background(), query, id)
+
+	var invoice Invoice
+	err := row.Scan(&invoice)
+	if err != nil {
+		return nil, fmt.Errorf("Error scanning invoice : %v", err)
+	}
+
+	return &invoice, nil
+}
+
+func (repo InvestorRepositoryDb) UpdateLockStatus(id int) error {
+	query := "UPDATE INVOICE SET is_locked=true WHERE ID=$1"
+
+	_, err := repo.db.Exec(context.Background(), query, id)
+	if err != nil {
+		return fmt.Errorf("Error updating invoice locked status : %v", err)
+	}
+	return nil
+}
+
+func (repo InvestorRepositoryDb) UpdateInvoiceInvestor(id, investor int) error {
+	query := "UPDATE INVOICE SET investor_id=$1 WHERE ID=$2"
+
+	_, err := repo.db.Exec(context.Background(), query, investor, id)
+	if err != nil {
+		return fmt.Errorf("Error updating invoice investor id : %v", err)
+	}
+	return nil
+}
