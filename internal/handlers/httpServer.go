@@ -32,7 +32,7 @@ func StartServer() {
 
 	bidRepoDb := repositories.NewBidRepositoryDb(dbClient)
 	bidService := service.NewBidService(bidRepoDb)
-	bidHandler := BidHandler{bidService}
+	bidHandler := NewBidHandler(bidService, invoiceRepoDb, investorRepoDb)
 
 	router := chi.NewRouter()
 
@@ -48,7 +48,8 @@ func StartServer() {
 	router.Get("/", home)
 
 	router.Post("/invoice", invoiceHandler.createInvoice)
-	router.Get("/invoice", invoiceHandler.viewInvoice)
+	router.Get("/invoice/{id}", invoiceHandler.viewInvoice)
+	router.Patch("/invoice/{invoice_id}", bidHandler.approveTrade)
 
 	router.Get("/issuer", issuerHandler.viewAllIssuers)
 	router.Get("/issuer/{id}", issuerHandler.viewIssuer)
@@ -56,9 +57,8 @@ func StartServer() {
 	router.Get("/investor", investorHandler.viewAllInvestors)
 	router.Get("/investor/{id}", investorHandler.viewInvestor)
 
-	router.Post("/trade", bidHandler.placeBid)
-	router.Get("/trade/{invoice_id}", bidHandler.viewAllBids)
-	router.Patch("/trade/{bid_id}", bidHandler.approveTrade)
+	router.Post("/bid", bidHandler.placeBid)
+	router.Get("/bid/{invoice_id}", bidHandler.viewAllBids)
 
 	http.ListenAndServe(fmt.Sprintf(":%s", os.Getenv("WEB_PORT")), router)
 }

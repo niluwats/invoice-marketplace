@@ -12,8 +12,6 @@ import (
 type InvoiceService interface {
 	NewInvoice(invRequest dto.InvoiceRequest) error
 	GetInvoice(id string) (*domain.Invoice, error)
-	UpdateInvoiceLockStatus(id int) error
-	UpdateInvoiceInvestor(id, investorId int) error
 }
 
 type DefaultInvoiceService struct {
@@ -25,14 +23,21 @@ func NewInvoiceService(repo repositories.InvoiceRepository) DefaultInvoiceServic
 }
 
 func (s DefaultInvoiceService) NewInvoice(invRequest dto.InvoiceRequest) error {
+	layout := "2006-01-02"
+	dueDate, err := time.Parse(layout, invRequest.DueDate)
+	if err != nil {
+		return err
+	}
+
 	invoice := domain.Invoice{
 		InvoiceNumber:  invRequest.InvoiceNumber,
 		CreatedOn:      time.Now(),
+		DueDate:        dueDate,
 		AmountDue:      invRequest.AmountDue,
 		AmountEnclosed: invRequest.AmountEnclosed,
 		IssuerId:       invRequest.IssuerId,
 	}
-	err := s.repo.Insert(invoice)
+	err = s.repo.Insert(invoice)
 	if err != nil {
 		return err
 	}
@@ -46,20 +51,4 @@ func (s DefaultInvoiceService) GetInvoice(id string) (*domain.Invoice, error) {
 		return nil, err
 	}
 	return invoice, nil
-}
-
-func (s DefaultInvoiceService) UpdateInvoiceLockStatus(id int) error {
-	err := s.repo.UpdateLockStatus(id)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s DefaultInvoiceService) UpdateInvoiceInvestor(id, investorId int) error {
-	err := s.repo.UpdateInvoiceInvestor(id, investorId)
-	if err != nil {
-		return err
-	}
-	return nil
 }

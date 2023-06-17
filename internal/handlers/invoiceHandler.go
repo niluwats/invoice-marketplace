@@ -34,7 +34,7 @@ func (h InvoiceHandler) viewInvoice(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.service.GetInvoice(invoiceId)
 	if err != nil {
-		writeResponse(w, http.StatusInternalServerError, err.Error())
+		writeResponse(w, http.StatusNotFound, err.Error())
 	} else {
 		writeResponse(w, http.StatusOK, resp)
 	}

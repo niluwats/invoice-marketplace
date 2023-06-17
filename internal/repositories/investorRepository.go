@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/niluwats/invoice-marketplace/internal/domain"
 )
@@ -12,7 +13,7 @@ import (
 type InvestorRepository interface {
 	FindById(id int) (*domain.Investor, error)
 	FindAll() ([]domain.Investor, error)
-	UpdateBalance(id int, amount float64) error
+	FindInvestorBalance(id int) (float64, error)
 }
 
 type InvestorRepositoryDb struct {
@@ -24,12 +25,15 @@ func NewInvestorRepositoryDb(dbclient *pgxpool.Pool) InvestorRepositoryDb {
 }
 
 func (repo InvestorRepositoryDb) FindById(id int) (*domain.Investor, error) {
-	query := "SELECT * FROM INVESTORS WHERE ID=$1"
+	ctx, cancel := context.WithTimeout(context.Background(), dbTimeOut)
+	defer cancel()
+
+	query := "SELECT * FROM investors WHERE ID=$1"
 
 	var investor domain.Investor
-	row := repo.db.QueryRow(context.Background(), query, id)
+	row := repo.db.QueryRow(ctx, query, id)
 
-	err := row.Scan(&investor)
+	err := row.Scan(&investor.ID, &investor.FirstName, &investor.LastName, &investor.Balance)
 	if err != nil {
 		log.Println("Error scanning investor : ", err)
 		return nil, fmt.Errorf("Error scanning investor : %s", err)
@@ -39,18 +43,22 @@ func (repo InvestorRepositoryDb) FindById(id int) (*domain.Investor, error) {
 }
 
 func (repo InvestorRepositoryDb) FindAll() ([]domain.Investor, error) {
-	query := "SELECT * FROM INVESTORS"
+	ctx, cancel := context.WithTimeout(context.Background(), dbTimeOut)
+	defer cancel()
+
+	query := "SELECT * FROM investors"
 
 	investors := make([]domain.Investor, 0)
-	rows, err := repo.db.Query(context.Background(), query)
+	rows, err := repo.db.Query(ctx, query)
 	if err != nil {
 		log.Println("Error querying investors : ", err)
 		return nil, fmt.Errorf("Error querying investors : %s", err)
 	}
+	defer rows.Close()
 
 	for rows.Next() {
 		var investor domain.Investor
-		err := rows.Scan(&investor)
+		err := rows.Scan(&investor.ID, &investor.FirstName, &investor.LastName, &investor.Balance)
 		if err != nil {
 			log.Println("Error scanning investors : ", err)
 			return nil, fmt.Errorf("Error scanning investors : %s", err)
@@ -62,13 +70,20 @@ func (repo InvestorRepositoryDb) FindAll() ([]domain.Investor, error) {
 	return investors, nil
 }
 
-func (repo InvestorRepositoryDb) UpdateBalance(id int, amount float64) error {
-	query := "UPDATE INVESTORS SET balance=balance-$1 WHERE ID=$2"
+func (repo InvestorRepositoryDb) FindInvestorBalance(id int) (float64, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), dbTimeOut)
+	defer cancel()
 
-	_, err := repo.db.Exec(context.Background(), query, amount, id)
+	query := "SELECT balance FROM investors WHERE id=$1"
+	row := repo.db.QueryRow(ctx, query, id)
+
+	var balance float64
+	err := row.Scan(&balance)
 	if err != nil {
-		log.Println("Error updating investors balance : ", err)
-		return fmt.Errorf("Error updating investor's balance : %s", err)
+		if err == pgx.ErrNoRows {
+			return 0, fmt.Errorf("No investor found")
+		}
+		return 0, fmt.Errorf("Error scanning investor : %s", err)
 	}
-	return nil
+	return balance, nil
 }

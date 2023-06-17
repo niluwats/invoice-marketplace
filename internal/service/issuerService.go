@@ -3,14 +3,13 @@ package service
 import (
 	"strconv"
 
-	"github.com/niluwats/invoice-marketplace/internal/domain"
+	"github.com/niluwats/invoice-marketplace/internal/dto"
 	"github.com/niluwats/invoice-marketplace/internal/repositories"
 )
 
 type IssuerService interface {
-	GetIssuer(id string) (*domain.Issuer, error)
-	GetAllIssuers() ([]domain.Issuer, error)
-	EditIssuerBalance(id string, amount float64) error
+	GetIssuer(id string) (*dto.IssuerResponse, error)
+	GetAllIssuers() ([]dto.IssuerResponse, error)
 }
 
 type DefaultIssuerService struct {
@@ -21,7 +20,7 @@ func NewIssuerService(repo repositories.IssuerRepository) DefaultIssuerService {
 	return DefaultIssuerService{repo}
 }
 
-func (s DefaultIssuerService) GetIssuer(id string) (*domain.Issuer, error) {
+func (s DefaultIssuerService) GetIssuer(id string) (*dto.IssuerResponse, error) {
 	issuerId, _ := strconv.Atoi(id)
 
 	issuer, err := s.repo.FindById(issuerId)
@@ -29,24 +28,20 @@ func (s DefaultIssuerService) GetIssuer(id string) (*domain.Issuer, error) {
 		return nil, err
 	}
 
-	return issuer, nil
+	response := dto.MapToIssuersResponse(*issuer)
+	return &response, nil
 }
 
-func (s DefaultIssuerService) GetAllIssuers() ([]domain.Issuer, error) {
+func (s DefaultIssuerService) GetAllIssuers() ([]dto.IssuerResponse, error) {
 	issuers, err := s.repo.FindAll()
 	if err != nil {
 		return nil, err
 	}
 
-	return issuers, nil
-}
-
-func (s DefaultIssuerService) EditIssuerBalance(id string, amount float64) error {
-	issuerId, _ := strconv.Atoi(id)
-
-	err := s.repo.UpdateBalance(issuerId, amount)
-	if err != nil {
-		return err
+	response := make([]dto.IssuerResponse, 0)
+	for _, v := range issuers {
+		response = append(response, dto.MapToIssuersResponse(v))
 	}
-	return nil
+
+	return response, nil
 }

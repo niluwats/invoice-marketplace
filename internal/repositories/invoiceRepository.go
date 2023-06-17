@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/niluwats/invoice-marketplace/internal/domain"
 )
@@ -11,8 +12,7 @@ import (
 type InvoiceRepository interface {
 	Insert(invoice domain.Invoice) error
 	FindById(id int) (*domain.Invoice, error)
-	UpdateLockStatus(id int) error
-	UpdateInvoiceInvestor(id, investor int) error
+	FindSum(id int) (float64, error)
 }
 
 type InvoiceRepositoryDb struct {
@@ -24,10 +24,13 @@ func NewInvoiceRepositoryDb(dbclient *pgxpool.Pool) InvoiceRepositoryDb {
 }
 
 func (repo InvoiceRepositoryDb) Insert(invoice domain.Invoice) error {
-	query := `INSERT INTO INVOICE(invoice_number,amount_due,amount_enclosed,duedate,created_on,issuer_id) 
-				VALUES($1,$2,$3,$4,$5,$6)`
+	ctx, cancel := context.WithTimeout(context.Background(), dbTimeOut)
+	defer cancel()
 
-	_, err := repo.db.Exec(context.Background(), query, invoice.InvoiceNumber, invoice.AmountDue, invoice.AmountEnclosed,
+	query := `INSERT INTO INVOICE(invoice_number,amount_due,amount_enclosed,duedate,created_on,issuer_id,is_locked,is_traded) 
+				VALUES($1,$2,$3,$4,$5,$6,false,false)`
+
+	_, err := repo.db.Exec(ctx, query, invoice.InvoiceNumber, invoice.AmountDue, invoice.AmountEnclosed,
 		invoice.DueDate, invoice.CreatedOn, invoice.IssuerId)
 	if err != nil {
 		return fmt.Errorf("Error inserting invoice : %s", err)
@@ -36,35 +39,54 @@ func (repo InvoiceRepositoryDb) Insert(invoice domain.Invoice) error {
 }
 
 func (repo InvoiceRepositoryDb) FindById(id int) (*domain.Invoice, error) {
-	query := "SELECT * FROM INVOICE WHERE ID=$1"
+	ctx, cancel := context.WithTimeout(context.Background(), dbTimeOut)
+	defer cancel()
 
-	row := repo.db.QueryRow(context.Background(), query, id)
+	query := `SELECT 
+				invoice.id,
+				invoice.invoice_number,
+				invoice.amount_due,
+				invoice.amount_enclosed,
+				invoice.created_on,
+				invoice.duedate,
+				invoice.is_locked,
+				invoice.is_traded,
+				invoice.issuer_id,
+				CASE 
+					WHEN invoice.is_traded=true THEN ARRAY_AGG(bids.investor_id)
+					ELSE NULL
+				END AS investors
+				FROM invoice LEFT JOIN bids ON invoice.id = bids.invoice_id 
+				WHERE invoice.id = $1 GROUP BY invoice.id`
+
+	row := repo.db.QueryRow(ctx, query, id)
 
 	var invoice domain.Invoice
-	err := row.Scan(&invoice)
+	err := row.Scan(&invoice.ID, &invoice.InvoiceNumber, &invoice.AmountDue, &invoice.AmountEnclosed,
+		&invoice.CreatedOn, &invoice.DueDate, &invoice.IsLocked,
+		&invoice.IsTraded, &invoice.IssuerId, &invoice.InvestorIds)
+
 	if err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, fmt.Errorf("No invoice found : %s", err)
+		}
 		return nil, fmt.Errorf("Error scanning invoice : %s", err)
 	}
 
 	return &invoice, nil
 }
 
-func (repo InvoiceRepositoryDb) UpdateLockStatus(id int) error {
-	query := "UPDATE INVOICE SET is_locked=true WHERE ID=$1"
+func (repo InvoiceRepositoryDb) FindSum(id int) (float64, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), dbTimeOut)
+	defer cancel()
 
-	_, err := repo.db.Exec(context.Background(), query, id)
+	query := "SELECT SUM(bid_amount) FROM bids WHERE invoice_id=$1"
+	row := repo.db.QueryRow(ctx, query, id)
+
+	var sum float64
+	err := row.Scan(&sum)
 	if err != nil {
-		return fmt.Errorf("Error updating invoice locked status : %s", err)
+		return 0, err
 	}
-	return nil
-}
-
-func (repo InvoiceRepositoryDb) UpdateInvoiceInvestor(id, investor int) error {
-	query := "UPDATE INVOICE SET investor_id=$1 WHERE ID=$2"
-
-	_, err := repo.db.Exec(context.Background(), query, investor, id)
-	if err != nil {
-		return fmt.Errorf("Error updating invoice investor id : %s", err)
-	}
-	return nil
+	return sum, nil
 }

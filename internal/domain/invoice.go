@@ -14,4 +14,5 @@ type Invoice struct {
 	IsLocked       bool      `json:"is_locked"`
 	IsTraded       bool      `json:"is_traded"`
 	IssuerId       int       `json:"issuer_id"`
+	InvestorIds    []int     `json:"investors"`
 }
