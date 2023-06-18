@@ -1,6 +1,8 @@
 package dto
 
 import (
+	"strconv"
+
 	"github.com/niluwats/invoice-marketplace/internal/domain"
 )
 
@@ -11,14 +13,15 @@ type Issuer struct {
 }
 
 type IssuerResponse struct {
-	ID          int     `json:"id,omitempty"`
+	ID          string  `json:"id,omitempty"`
 	CompanyName string  `json:"company_name"`
 	Balance     float64 `json:"balance"`
 }
 
 func MapToIssuersResponse(issuer domain.Issuer) IssuerResponse {
+	strIssuerId := strconv.Itoa(issuer.ID)
 	return IssuerResponse{
-		ID:          issuer.ID,
+		ID:          strIssuerId,
 		CompanyName: issuer.CompanyName,
 		Balance:     issuer.Investor.Balance,
 	}

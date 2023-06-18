@@ -24,8 +24,7 @@ func NewInvoiceService(repo repositories.InvoiceRepository) DefaultInvoiceServic
 }
 
 func (s DefaultInvoiceService) NewInvoice(invRequest dto.InvoiceRequest) *appErr.AppError {
-	layout := "2006-01-02"
-	dueDate, err := time.Parse(layout, invRequest.DueDate)
+	dueDate, err := time.Parse("2006-01-02", invRequest.DueDate)
 	if err != nil {
 		return appErr.NewUnexpectedError("Error parsing time format : " + err.Error())
 	}
