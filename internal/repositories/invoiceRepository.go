@@ -2,17 +2,17 @@ package repositories
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/niluwats/invoice-marketplace/internal/domain"
+	appErr "github.com/niluwats/invoice-marketplace/pkg/errors"
 )
 
 type InvoiceRepository interface {
-	Insert(invoice domain.Invoice) error
-	FindById(id int) (*domain.Invoice, error)
-	FindTotalInvestment(id int) (float64, error)
+	Insert(invoice domain.Invoice) *appErr.AppError
+	FindById(id int) (*domain.Invoice, *appErr.AppError)
+	FindTotalInvestment(id int) (float64, *appErr.AppError)
 }
 
 type InvoiceRepositoryDb struct {
@@ -23,7 +23,7 @@ func NewInvoiceRepositoryDb(dbclient *pgxpool.Pool) InvoiceRepositoryDb {
 	return InvoiceRepositoryDb{db: dbclient}
 }
 
-func (repo InvoiceRepositoryDb) Insert(invoice domain.Invoice) error {
+func (repo InvoiceRepositoryDb) Insert(invoice domain.Invoice) *appErr.AppError {
 	ctx, cancel := context.WithTimeout(context.Background(), dbTimeOut)
 	defer cancel()
 
@@ -33,12 +33,12 @@ func (repo InvoiceRepositoryDb) Insert(invoice domain.Invoice) error {
 	_, err := repo.db.Exec(ctx, query, invoice.InvoiceNumber, invoice.AmountDue, invoice.AskingPrice,
 		invoice.DueDate, invoice.CreatedOn, invoice.IssuerId)
 	if err != nil {
-		return fmt.Errorf("Error inserting invoice : %s", err)
+		return appErr.NewUnexpectedError("Error inserting invoice : " + err.Error())
 	}
 	return nil
 }
 
-func (repo InvoiceRepositoryDb) FindById(id int) (*domain.Invoice, error) {
+func (repo InvoiceRepositoryDb) FindById(id int) (*domain.Invoice, *appErr.AppError) {
 	ctx, cancel := context.WithTimeout(context.Background(), dbTimeOut)
 	defer cancel()
 
@@ -68,15 +68,15 @@ func (repo InvoiceRepositoryDb) FindById(id int) (*domain.Invoice, error) {
 
 	if err != nil {
 		if err == pgx.ErrNoRows {
-			return nil, fmt.Errorf("No invoice found : %s", err)
+			return nil, appErr.NewNotFoundError("Invoice not found ")
 		}
-		return nil, fmt.Errorf("Error scanning invoice : %s", err)
+		return nil, appErr.NewUnexpectedError("Error querying invoice : " + err.Error())
 	}
 
 	return &invoice, nil
 }
 
-func (repo InvoiceRepositoryDb) FindTotalInvestment(id int) (float64, error) {
+func (repo InvoiceRepositoryDb) FindTotalInvestment(id int) (float64, *appErr.AppError) {
 	ctx, cancel := context.WithTimeout(context.Background(), dbTimeOut)
 	defer cancel()
 
@@ -86,7 +86,7 @@ func (repo InvoiceRepositoryDb) FindTotalInvestment(id int) (float64, error) {
 	var sum float64
 	err := row.Scan(&sum)
 	if err != nil {
-		return 0, err
+		return 0, appErr.NewUnexpectedError("Error querying invoice sum : " + err.Error())
 	}
 	return sum, nil
 }

@@ -17,10 +17,10 @@ func (i *Investor) GetBalance() float64 {
 	return i.Balance
 }
 
-func (user *Investor) CheckPassword(providedPassword string) error {
+func (user *Investor) CheckPassword(providedPassword string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(providedPassword))
 	if err != nil {
-		return err
+		return false
 	}
-	return nil
+	return true
 }

@@ -24,7 +24,7 @@ func (h AuthHandler) authenticate(w http.ResponseWriter, r *http.Request) {
 	} else {
 		response, err := h.service.VerifyUser(request)
 		if err != nil {
-			writeResponse(w, http.StatusUnauthorized, err.Error())
+			writeResponse(w, err.Code, err.Message)
 		} else {
 			writeResponse(w, http.StatusOK, response)
 		}
@@ -39,7 +39,7 @@ func (h AuthHandler) register(w http.ResponseWriter, r *http.Request) {
 	} else {
 		err := h.service.Register(request)
 		if err != nil {
-			writeResponse(w, http.StatusUnauthorized, err.Error())
+			writeResponse(w, err.Code, err.Message)
 		} else {
 			writeResponse(w, http.StatusCreated, "New user created")
 		}

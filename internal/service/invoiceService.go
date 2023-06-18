@@ -7,11 +7,12 @@ import (
 	"github.com/niluwats/invoice-marketplace/internal/domain"
 	"github.com/niluwats/invoice-marketplace/internal/dto"
 	"github.com/niluwats/invoice-marketplace/internal/repositories"
+	appErr "github.com/niluwats/invoice-marketplace/pkg/errors"
 )
 
 type InvoiceService interface {
-	NewInvoice(invRequest dto.InvoiceRequest) error
-	GetInvoice(id string) (*domain.Invoice, error)
+	NewInvoice(invRequest dto.InvoiceRequest) *appErr.AppError
+	GetInvoice(id string) (*domain.Invoice, *appErr.AppError)
 }
 
 type DefaultInvoiceService struct {
@@ -22,11 +23,11 @@ func NewInvoiceService(repo repositories.InvoiceRepository) DefaultInvoiceServic
 	return DefaultInvoiceService{repo}
 }
 
-func (s DefaultInvoiceService) NewInvoice(invRequest dto.InvoiceRequest) error {
+func (s DefaultInvoiceService) NewInvoice(invRequest dto.InvoiceRequest) *appErr.AppError {
 	layout := "2006-01-02"
 	dueDate, err := time.Parse(layout, invRequest.DueDate)
 	if err != nil {
-		return err
+		return appErr.NewUnexpectedError("Error parsing time format : " + err.Error())
 	}
 
 	invoice := domain.Invoice{
@@ -37,18 +38,18 @@ func (s DefaultInvoiceService) NewInvoice(invRequest dto.InvoiceRequest) error {
 		AskingPrice:   invRequest.AskingPrice,
 		IssuerId:      invRequest.IssuerId,
 	}
-	err = s.repo.Insert(invoice)
-	if err != nil {
-		return err
+	err_ := s.repo.Insert(invoice)
+	if err_ != nil {
+		return err_
 	}
 	return nil
 }
 
-func (s DefaultInvoiceService) GetInvoice(id string) (*domain.Invoice, error) {
+func (s DefaultInvoiceService) GetInvoice(id string) (*domain.Invoice, *appErr.AppError) {
 	invoiceId, _ := strconv.Atoi(id)
-	invoice, err := s.repo.FindById(invoiceId)
-	if err != nil {
-		return nil, err
+	invoice, err_ := s.repo.FindById(invoiceId)
+	if err_ != nil {
+		return nil, err_
 	}
 	return invoice, nil
 }

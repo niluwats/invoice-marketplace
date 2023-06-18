@@ -2,20 +2,18 @@ package repositories
 
 import (
 	"context"
-	"errors"
-	"fmt"
-	"log"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/niluwats/invoice-marketplace/internal/domain"
+	appErr "github.com/niluwats/invoice-marketplace/pkg/errors"
 )
 
 type InvestorRepository interface {
-	FindById(id int) (*domain.Investor, error)
-	FindAll() ([]domain.Investor, error)
-	FindByEmail(email string) (*domain.Investor, error)
-	Save(investor domain.Investor) error
+	FindById(id int) (*domain.Investor, *appErr.AppError)
+	FindAll() ([]domain.Investor, *appErr.AppError)
+	FindByEmail(email string) (*domain.Investor, *appErr.AppError)
+	Save(investor domain.Investor) *appErr.AppError
 }
 
 type InvestorRepositoryDb struct {
@@ -26,7 +24,7 @@ func NewInvestorRepositoryDb(dbclient *pgxpool.Pool) InvestorRepositoryDb {
 	return InvestorRepositoryDb{db: dbclient}
 }
 
-func (repo InvestorRepositoryDb) FindById(id int) (*domain.Investor, error) {
+func (repo InvestorRepositoryDb) FindById(id int) (*domain.Investor, *appErr.AppError) {
 	ctx, cancel := context.WithTimeout(context.Background(), dbTimeOut)
 	defer cancel()
 
@@ -37,14 +35,16 @@ func (repo InvestorRepositoryDb) FindById(id int) (*domain.Investor, error) {
 
 	err := row.Scan(&investor.ID, &investor.FirstName, &investor.LastName, &investor.Balance, &investor.IsIssuer)
 	if err != nil {
-		log.Println("Error scanning investor : ", err)
-		return nil, fmt.Errorf("Error scanning investor : %s", err)
+		if err == pgx.ErrNoRows {
+			return nil, appErr.NewNotFoundError("Investor not found ")
+		}
+		return nil, appErr.NewUnexpectedError("Error querying investor : " + err.Error())
 	}
 
 	return &investor, nil
 }
 
-func (repo InvestorRepositoryDb) FindAll() ([]domain.Investor, error) {
+func (repo InvestorRepositoryDb) FindAll() ([]domain.Investor, *appErr.AppError) {
 	ctx, cancel := context.WithTimeout(context.Background(), dbTimeOut)
 	defer cancel()
 
@@ -53,8 +53,7 @@ func (repo InvestorRepositoryDb) FindAll() ([]domain.Investor, error) {
 	investors := make([]domain.Investor, 0)
 	rows, err := repo.db.Query(ctx, query)
 	if err != nil {
-		log.Println("Error querying investors : ", err)
-		return nil, fmt.Errorf("Error querying investors : %s", err)
+		return nil, appErr.NewUnexpectedError("Error querying investors : " + err.Error())
 	}
 	defer rows.Close()
 
@@ -62,8 +61,7 @@ func (repo InvestorRepositoryDb) FindAll() ([]domain.Investor, error) {
 		var investor domain.Investor
 		err := rows.Scan(&investor.ID, &investor.FirstName, &investor.LastName, &investor.Balance)
 		if err != nil {
-			log.Println("Error scanning investors : ", err)
-			return nil, fmt.Errorf("Error scanning investors : %s", err)
+			return nil, appErr.NewUnexpectedError("Error scanning investors : " + err.Error())
 		}
 
 		investors = append(investors, investor)
@@ -72,7 +70,7 @@ func (repo InvestorRepositoryDb) FindAll() ([]domain.Investor, error) {
 	return investors, nil
 }
 
-func (repo InvestorRepositoryDb) FindByEmail(email string) (*domain.Investor, error) {
+func (repo InvestorRepositoryDb) FindByEmail(email string) (*domain.Investor, *appErr.AppError) {
 	ctx, cancel := context.WithTimeout(context.Background(), dbTimeOut)
 	defer cancel()
 
@@ -84,16 +82,15 @@ func (repo InvestorRepositoryDb) FindByEmail(email string) (*domain.Investor, er
 	err := row.Scan(&user.ID, &user.Password, &user.IsIssuer)
 	if err != nil {
 		if err == pgx.ErrNoRows {
-			return nil, fmt.Errorf("Email not found")
+			return nil, appErr.NewNotFoundError("Email not found ")
 		}
-		log.Println("Error scanning investor : ", err)
-		return nil, fmt.Errorf("Error scanning investor : %s", err)
+		return nil, appErr.NewUnexpectedError("Error scanning investor by email : " + err.Error())
 	}
 
 	return &user, nil
 }
 
-func (repo InvestorRepositoryDb) Save(investor domain.Investor) error {
+func (repo InvestorRepositoryDb) Save(investor domain.Investor) *appErr.AppError {
 	ctx, cancel := context.WithTimeout(context.Background(), dbTimeOut)
 	defer cancel()
 
@@ -102,15 +99,15 @@ func (repo InvestorRepositoryDb) Save(investor domain.Investor) error {
 		return err
 	}
 	if user != nil {
-		return errors.New("Email already taken ")
+		return appErr.NewConflictError("Email already taken")
 	}
 
 	query := `INSERT INTO investors(first_name,last_name,balance,email,password,is_active) 
 				VALUES($1,$2,$3,$4,$5,true)`
 
-	_, err = repo.db.Exec(ctx, query, investor.FirstName, investor.LastName, investor.Balance, investor.Email, investor.Password)
+	_, e := repo.db.Exec(ctx, query, investor.FirstName, investor.LastName, investor.Balance, investor.Email, investor.Password)
 	if err != nil {
-		return fmt.Errorf("Error inserting invoice : %s", err)
+		return appErr.NewUnexpectedError("Error inserting invoice : " + e.Error())
 	}
 	return nil
 }

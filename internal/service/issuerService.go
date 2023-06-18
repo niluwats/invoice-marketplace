@@ -5,11 +5,12 @@ import (
 
 	"github.com/niluwats/invoice-marketplace/internal/dto"
 	"github.com/niluwats/invoice-marketplace/internal/repositories"
+	appErr "github.com/niluwats/invoice-marketplace/pkg/errors"
 )
 
 type IssuerService interface {
-	GetIssuer(id string) (*dto.IssuerResponse, error)
-	GetAllIssuers() ([]dto.IssuerResponse, error)
+	GetIssuer(id string) (*dto.IssuerResponse, *appErr.AppError)
+	GetAllIssuers() ([]dto.IssuerResponse, *appErr.AppError)
 }
 
 type DefaultIssuerService struct {
@@ -20,22 +21,22 @@ func NewIssuerService(repo repositories.IssuerRepository) DefaultIssuerService {
 	return DefaultIssuerService{repo}
 }
 
-func (s DefaultIssuerService) GetIssuer(id string) (*dto.IssuerResponse, error) {
+func (s DefaultIssuerService) GetIssuer(id string) (*dto.IssuerResponse, *appErr.AppError) {
 	issuerId, _ := strconv.Atoi(id)
 
-	issuer, err := s.repo.FindById(issuerId)
-	if err != nil {
-		return nil, err
+	issuer, err_ := s.repo.FindById(issuerId)
+	if err_ != nil {
+		return nil, err_
 	}
 
 	response := dto.MapToIssuersResponse(*issuer)
 	return &response, nil
 }
 
-func (s DefaultIssuerService) GetAllIssuers() ([]dto.IssuerResponse, error) {
-	issuers, err := s.repo.FindAll()
-	if err != nil {
-		return nil, err
+func (s DefaultIssuerService) GetAllIssuers() ([]dto.IssuerResponse, *appErr.AppError) {
+	issuers, err_ := s.repo.FindAll()
+	if err_ != nil {
+		return nil, err_
 	}
 
 	response := make([]dto.IssuerResponse, 0)

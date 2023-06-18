@@ -20,9 +20,9 @@ func (h InvoiceHandler) createInvoice(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		writeResponse(w, http.StatusBadRequest, err.Error())
 	} else {
-		err = h.service.NewInvoice(request)
+		err := h.service.NewInvoice(request)
 		if err != nil {
-			writeResponse(w, http.StatusInternalServerError, err.Error())
+			writeResponse(w, err.Code, err.Message)
 		} else {
 			writeResponse(w, http.StatusCreated, "Invoice created")
 		}
@@ -34,7 +34,7 @@ func (h InvoiceHandler) viewInvoice(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.service.GetInvoice(invoiceId)
 	if err != nil {
-		writeResponse(w, http.StatusNotFound, err.Error())
+		writeResponse(w, err.Code, err.Message)
 	} else {
 		writeResponse(w, http.StatusOK, resp)
 	}

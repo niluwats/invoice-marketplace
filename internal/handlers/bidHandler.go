@@ -40,9 +40,9 @@ func (h BidHandler) placeBid(w http.ResponseWriter, r *http.Request) {
 
 		err := h.service.PlaceBid(request)
 		if err != nil {
-			writeResponse(w, http.StatusInternalServerError, err.Error())
+			writeResponse(w, err.Code, err.Message)
 		} else {
-			writeResponse(w, http.StatusOK, "Bid placed successfully")
+			writeResponse(w, http.StatusCreated, "Bid placed successfully")
 		}
 	}
 }
@@ -51,7 +51,7 @@ func (h BidHandler) approveTrade(w http.ResponseWriter, r *http.Request) {
 	invoiceId := chi.URLParam(r, "invoice_id")
 	err := h.service.ApproveTrade(invoiceId)
 	if err != nil {
-		writeResponse(w, http.StatusInternalServerError, err.Error())
+		writeResponse(w, err.Code, err.Message)
 	} else {
 		writeResponse(w, http.StatusOK, "Trade approved!")
 	}
@@ -61,7 +61,7 @@ func (h BidHandler) viewAllBids(w http.ResponseWriter, r *http.Request) {
 	invoiceId := chi.URLParam(r, "invoice_id")
 	bids, err := h.service.GetAllBids(invoiceId)
 	if err != nil {
-		writeResponse(w, http.StatusInternalServerError, err.Error())
+		writeResponse(w, err.Code, err.Message)
 	} else {
 		writeResponse(w, http.StatusOK, bids)
 	}

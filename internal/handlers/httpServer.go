@@ -51,11 +51,11 @@ func StartServer() {
 	router.Group(func(r chi.Router) {
 		r.Use(auth_middleware.JWTMiddleware)
 
-		r.Get("/issuer", issuerHandler.viewAllIssuers)
-		r.Get("/issuer/{id}", issuerHandler.viewIssuer)
-
 		r.Get("/investor", investorHandler.viewAllInvestors)
 		r.Get("/investor/{id}", investorHandler.viewInvestor)
+
+		r.Get("/issuer", issuerHandler.viewAllIssuers)
+		r.Get("/issuer/{id}", issuerHandler.viewIssuer)
 
 		r.Post("/bid", bidHandler.placeBid)
 		r.Get("/bid/{invoice_id}", bidHandler.viewAllBids)

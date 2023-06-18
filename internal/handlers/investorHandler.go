@@ -16,7 +16,7 @@ func (h InvestorHandler) viewInvestor(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.service.GetInvestor(investorId)
 	if err != nil {
-		writeResponse(w, http.StatusInternalServerError, err.Error())
+		writeResponse(w, err.Code, err.Message)
 	} else {
 		writeResponse(w, http.StatusOK, resp)
 	}
@@ -25,7 +25,7 @@ func (h InvestorHandler) viewInvestor(w http.ResponseWriter, r *http.Request) {
 func (h InvestorHandler) viewAllInvestors(w http.ResponseWriter, r *http.Request) {
 	resp, err := h.service.GetAllInvestors()
 	if err != nil {
-		writeResponse(w, http.StatusInternalServerError, err.Error())
+		writeResponse(w, err.Code, err.Message)
 	} else {
 		writeResponse(w, http.StatusOK, resp)
 	}

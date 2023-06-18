@@ -14,7 +14,7 @@ func (e AppError) AsMessage() *AppError {
 	}
 }
 
-// NewUnexpectedError returns 404 http.StatusNotFound error
+// NewNotFoundError returns 404 http.StatusNotFound error
 func NewNotFoundError(message string) *AppError {
 	return &AppError{
 		Message: message,
@@ -38,7 +38,7 @@ func NewValidationError(message string) *AppError {
 	}
 }
 
-// NewValidationError returns 422 http.StatusBadRequest error
+// NewBadRequest returns 422 http.StatusBadRequest error
 func NewBadRequest(message string) *AppError {
 	return &AppError{
 		Message: message,
@@ -54,10 +54,18 @@ func NewAuthenticationError(message string) *AppError {
 	}
 }
 
-// NewAuthenticationError returns 403 http.StatusForbidden error
+// NewForbiddenError returns 403 http.StatusForbidden error
 func NewForbiddenError(message string) *AppError {
 	return &AppError{
 		Message: message,
 		Code:    http.StatusForbidden,
+	}
+}
+
+// NewConflictError returns 403 http.StatusConflict error
+func NewConflictError(message string) *AppError {
+	return &AppError{
+		Message: message,
+		Code:    http.StatusConflict,
 	}
 }
