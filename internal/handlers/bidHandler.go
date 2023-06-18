@@ -3,26 +3,22 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"sync"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/niluwats/invoice-marketplace/internal/dto"
-	"github.com/niluwats/invoice-marketplace/internal/repositories"
 	"github.com/niluwats/invoice-marketplace/internal/service"
 )
 
 var mutexMap sync.Map
 
 type BidHandler struct {
-	service      service.DefaultBidService
-	invoiceRepo  repositories.InvoiceRepository
-	investorRepo repositories.InvestorRepository
+	service service.DefaultBidService
 }
 
-func NewBidHandler(service service.DefaultBidService, invoiceRepo repositories.InvoiceRepository, investorRepo repositories.InvestorRepository) BidHandler {
-	return BidHandler{service: service, invoiceRepo: invoiceRepo, investorRepo: investorRepo}
+func NewBidHandler(service service.DefaultBidService) BidHandler {
+	return BidHandler{service}
 }
 
 func home(w http.ResponseWriter, r *http.Request) {
@@ -42,9 +38,7 @@ func (h BidHandler) placeBid(w http.ResponseWriter, r *http.Request) {
 		mutex.Lock()
 		defer mutex.Unlock()
 
-		log.Println("placing bid ", request.InvoiceId, request.InvestorId)
-
-		err := h.service.PlaceBid(request, h.invoiceRepo, h.investorRepo)
+		err := h.service.PlaceBid(request)
 		if err != nil {
 			writeResponse(w, http.StatusInternalServerError, err.Error())
 		} else {
@@ -55,7 +49,7 @@ func (h BidHandler) placeBid(w http.ResponseWriter, r *http.Request) {
 
 func (h BidHandler) approveTrade(w http.ResponseWriter, r *http.Request) {
 	invoiceId := chi.URLParam(r, "invoice_id")
-	err := h.service.UpdateApproval(invoiceId)
+	err := h.service.ApproveTrade(invoiceId)
 	if err != nil {
 		writeResponse(w, http.StatusInternalServerError, err.Error())
 	} else {

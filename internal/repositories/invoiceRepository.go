@@ -12,7 +12,7 @@ import (
 type InvoiceRepository interface {
 	Insert(invoice domain.Invoice) error
 	FindById(id int) (*domain.Invoice, error)
-	FindSum(id int) (float64, error)
+	FindTotalInvestment(id int) (float64, error)
 }
 
 type InvoiceRepositoryDb struct {
@@ -27,10 +27,10 @@ func (repo InvoiceRepositoryDb) Insert(invoice domain.Invoice) error {
 	ctx, cancel := context.WithTimeout(context.Background(), dbTimeOut)
 	defer cancel()
 
-	query := `INSERT INTO INVOICE(invoice_number,amount_due,amount_enclosed,duedate,created_on,issuer_id,is_locked,is_traded) 
+	query := `INSERT INTO INVOICE(invoice_number,amount_due,asking_price,duedate,created_on,issuer_id,is_locked,is_traded) 
 				VALUES($1,$2,$3,$4,$5,$6,false,false)`
 
-	_, err := repo.db.Exec(ctx, query, invoice.InvoiceNumber, invoice.AmountDue, invoice.AmountEnclosed,
+	_, err := repo.db.Exec(ctx, query, invoice.InvoiceNumber, invoice.AmountDue, invoice.AskingPrice,
 		invoice.DueDate, invoice.CreatedOn, invoice.IssuerId)
 	if err != nil {
 		return fmt.Errorf("Error inserting invoice : %s", err)
@@ -46,7 +46,7 @@ func (repo InvoiceRepositoryDb) FindById(id int) (*domain.Invoice, error) {
 				invoice.id,
 				invoice.invoice_number,
 				invoice.amount_due,
-				invoice.amount_enclosed,
+				invoice.asking_price,
 				invoice.created_on,
 				invoice.duedate,
 				invoice.is_locked,
@@ -62,7 +62,7 @@ func (repo InvoiceRepositoryDb) FindById(id int) (*domain.Invoice, error) {
 	row := repo.db.QueryRow(ctx, query, id)
 
 	var invoice domain.Invoice
-	err := row.Scan(&invoice.ID, &invoice.InvoiceNumber, &invoice.AmountDue, &invoice.AmountEnclosed,
+	err := row.Scan(&invoice.ID, &invoice.InvoiceNumber, &invoice.AmountDue, &invoice.AskingPrice,
 		&invoice.CreatedOn, &invoice.DueDate, &invoice.IsLocked,
 		&invoice.IsTraded, &invoice.IssuerId, &invoice.InvestorIds)
 
@@ -76,11 +76,11 @@ func (repo InvoiceRepositoryDb) FindById(id int) (*domain.Invoice, error) {
 	return &invoice, nil
 }
 
-func (repo InvoiceRepositoryDb) FindSum(id int) (float64, error) {
+func (repo InvoiceRepositoryDb) FindTotalInvestment(id int) (float64, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), dbTimeOut)
 	defer cancel()
 
-	query := "SELECT SUM(bid_amount) FROM bids WHERE invoice_id=$1"
+	query := "SELECT COALESCE(SUM(bid_amount),0)FROM bids WHERE invoice_id=$1"
 	row := repo.db.QueryRow(ctx, query, id)
 
 	var sum float64

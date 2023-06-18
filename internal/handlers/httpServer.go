@@ -10,6 +10,7 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 	"github.com/niluwats/invoice-marketplace/internal/db"
+	auth_middleware "github.com/niluwats/invoice-marketplace/internal/middleware"
 	"github.com/niluwats/invoice-marketplace/internal/repositories"
 	"github.com/niluwats/invoice-marketplace/internal/service"
 )
@@ -19,20 +20,18 @@ func StartServer() {
 	dbClient := db.SetupDBConn()
 
 	invoiceRepoDb := repositories.NewInvoiceRepositoryDb(dbClient)
-	invoiceService := service.NewInvoiceService(invoiceRepoDb)
-	invoiceHandler := InvoiceHandler{invoiceService}
+	invoiceHandler := InvoiceHandler{service.NewInvoiceService(invoiceRepoDb)}
 
 	investorRepoDb := repositories.NewInvestorRepositoryDb(dbClient)
-	investorService := service.NewInvestorService(investorRepoDb)
-	investorHandler := InvestorHandler{investorService}
+	investorHandler := InvestorHandler{service.NewInvestorService(investorRepoDb)}
 
 	issuerRepoDb := repositories.NewIssuerRepositoryDb(dbClient)
-	issuerService := service.NewIssuerService(issuerRepoDb)
-	issuerHandler := IssuerHandler{issuerService}
+	issuerHandler := IssuerHandler{service.NewIssuerService(issuerRepoDb)}
 
 	bidRepoDb := repositories.NewBidRepositoryDb(dbClient)
-	bidService := service.NewBidService(bidRepoDb)
-	bidHandler := NewBidHandler(bidService, invoiceRepoDb, investorRepoDb)
+	bidHandler := NewBidHandler(service.NewBidService(bidRepoDb, investorRepoDb, invoiceRepoDb))
+
+	authHandler := NewAuthHandler(service.NewAuthService(investorRepoDb))
 
 	router := chi.NewRouter()
 
@@ -46,19 +45,25 @@ func StartServer() {
 	router.Use(middleware.Heartbeat("/ping"))
 
 	router.Get("/", home)
+	router.Post("/register", authHandler.register)
+	router.Post("/auth", authHandler.authenticate)
 
-	router.Post("/invoice", invoiceHandler.createInvoice)
-	router.Get("/invoice/{id}", invoiceHandler.viewInvoice)
-	router.Patch("/invoice/{invoice_id}", bidHandler.approveTrade)
+	router.Group(func(r chi.Router) {
+		r.Use(auth_middleware.JWTMiddleware)
 
-	router.Get("/issuer", issuerHandler.viewAllIssuers)
-	router.Get("/issuer/{id}", issuerHandler.viewIssuer)
+		r.Get("/issuer", issuerHandler.viewAllIssuers)
+		r.Get("/issuer/{id}", issuerHandler.viewIssuer)
 
-	router.Get("/investor", investorHandler.viewAllInvestors)
-	router.Get("/investor/{id}", investorHandler.viewInvestor)
+		r.Get("/investor", investorHandler.viewAllInvestors)
+		r.Get("/investor/{id}", investorHandler.viewInvestor)
 
-	router.Post("/bid", bidHandler.placeBid)
-	router.Get("/bid/{invoice_id}", bidHandler.viewAllBids)
+		r.Post("/bid", bidHandler.placeBid)
+		r.Get("/bid/{invoice_id}", bidHandler.viewAllBids)
+
+		r.Get("/invoice/{id}", invoiceHandler.viewInvoice)
+		r.With(auth_middleware.PermissionMiddleware).Post("/invoice", invoiceHandler.createInvoice)
+		r.With(auth_middleware.PermissionMiddleware).Patch("/invoice/{invoice_id}", bidHandler.approveTrade)
+	})
 
 	http.ListenAndServe(fmt.Sprintf(":%s", os.Getenv("WEB_PORT")), router)
 }

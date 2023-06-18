@@ -12,7 +12,11 @@ CREATE TABLE
         id SERIAL PRIMARY KEY,
         first_name VARCHAR NOT NULL,
         last_name VARCHAR,
-        balance NUMERIC(10, 2)
+        balance NUMERIC(10, 2),
+        email VARCHAR,
+        password VARCHAR,
+        is_active BOOLEAN,
+        is_issuer BOOLEAN
     );
 
 CREATE TABLE
@@ -28,7 +32,7 @@ CREATE TABLE
         id SERIAL PRIMARY KEY,
         invoice_number VARCHAR NOT NULL,
         amount_due NUMERIC(10, 2),
-        amount_enclosed NUMERIC(10, 2),
+        asking_price NUMERIC(10, 2),
         created_on DATE,
         duedate DATE,
         is_locked BOOLEAN,
@@ -51,23 +55,63 @@ CREATE TABLE
 
 INSERT INTO
     investors(first_name, last_name, balance)
-VALUES ('Jane', 'Daves', 10000.0);
+VALUES (
+        'Jane',
+        'Daves',
+        10000.0,
+        'jane123@gmail.com',
+        '',
+        true,
+        true
+    );
 
 INSERT INTO
     investors(first_name, last_name, balance)
-VALUES ('Will', 'Johnson', 5000.0);
+VALUES (
+        'Will',
+        'Johnson',
+        5000.0,
+        'will123@gmail.com',
+        '$2a$10$p.d6hCOF16/jvAhmt5yBK.5S2piteKX0KPHt3VQqFGWoIn1cESdp.',
+        true,
+        true
+    );
 
 INSERT INTO
     investors(first_name, last_name, balance)
-VALUES ('Robert', 'David', 2000.0);
+VALUES (
+        'Robert',
+        'David',
+        2000.0,
+        'robert123@gmail.com',
+        '$2a$10$p.d6hCOF16/jvAhmt5yBK.5S2piteKX0KPHt3VQqFGWoIn1cESdp.',
+        true,
+        false
+    );
 
 INSERT INTO
     investors(first_name, last_name, balance)
-VALUES ('Lisa', 'Nancy', 6000.0);
+VALUES (
+        'Lisa',
+        'Nancy',
+        6000.0,
+        'lisa123@gmail.com',
+        '$2a$10$p.d6hCOF16/jvAhmt5yBK.5S2piteKX0KPHt3VQqFGWoIn1cESdp.',
+        true,
+        true
+    );
 
 INSERT INTO
     investors(first_name, last_name, balance)
-VALUES ('Sara', 'Lee', 1000.0);
+VALUES (
+        'Sara',
+        'Lee',
+        1000.0,
+        'sara123@gmail.com',
+        '$2a$10$p.d6hCOF16/jvAhmt5yBK.5S2piteKX0KPHt3VQqFGWoIn1cESdp.',
+        true,
+        false
+    );
 
 INSERT INTO issuers(company_name,investor_id ) VALUES ('test1', 1);
 

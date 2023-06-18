@@ -14,10 +14,9 @@ import (
 var dbTimeOut = time.Second * 3
 
 type BidRepository interface {
-	Insert(bid domain.Bid, restBalance float64) error
-	UpdateApproval(invoiceid, issuerid int, amount float64) error
+	ProcessBid(bid domain.Bid, restBalance float64) error
+	ProcessApproveBid(invoiceid, issuerid int, amount float64) error
 	GetAll(invoiceId int) ([]domain.Bid, error)
-	GetTrade(invoiceId int) (*domain.Invoice, error)
 }
 
 type BidRepositoryDb struct {
@@ -28,7 +27,7 @@ func NewBidRepositoryDb(dbclient *pgxpool.Pool) BidRepositoryDb {
 	return BidRepositoryDb{dbclient}
 }
 
-func (repo BidRepositoryDb) Insert(bid domain.Bid, restBalance float64) error {
+func (repo BidRepositoryDb) ProcessBid(bid domain.Bid, restBalance float64) error {
 	ctx, cancel := context.WithTimeout(context.Background(), dbTimeOut)
 	defer cancel()
 
@@ -73,7 +72,7 @@ func (repo BidRepositoryDb) Insert(bid domain.Bid, restBalance float64) error {
 	return nil
 }
 
-func (repo BidRepositoryDb) UpdateApproval(invoiceid, issuerid int, amount float64) error {
+func (repo BidRepositoryDb) ProcessApproveBid(invoiceid, issuerid int, amount float64) error {
 	ctx, cancel := context.WithTimeout(context.Background(), dbTimeOut)
 	defer cancel()
 
@@ -140,25 +139,4 @@ func (repo BidRepositoryDb) GetAll(invoiceId int) ([]domain.Bid, error) {
 		}
 		return bids, nil
 	}
-}
-
-func (repo BidRepositoryDb) GetTrade(invoiceId int) (*domain.Invoice, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), dbTimeOut)
-	defer cancel()
-
-	query := "SELECT issuer_id,amount_enclosed,is_locked,is_traded FROM invoice WHERE id=$1"
-
-	row := repo.db.QueryRow(ctx, query, invoiceId)
-
-	var invoice domain.Invoice
-	err := row.Scan(&invoice.IssuerId, &invoice.AmountEnclosed, &invoice.IsLocked, &invoice.IsTraded)
-	if err != nil {
-		if err == pgx.ErrNoRows {
-			return nil, fmt.Errorf("Invoice not found : %s", err)
-		}
-		log.Println("Error retrieving invoice : ", err)
-		return nil, fmt.Errorf("Error retrieving invoice : %s", err)
-	}
-
-	return &invoice, nil
 }

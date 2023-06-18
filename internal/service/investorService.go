@@ -4,12 +4,14 @@ import (
 	"strconv"
 
 	"github.com/niluwats/invoice-marketplace/internal/domain"
+	"github.com/niluwats/invoice-marketplace/internal/dto"
 	"github.com/niluwats/invoice-marketplace/internal/repositories"
 )
 
 type InvestorService interface {
 	GetInvestor(id string) (*domain.Investor, error)
 	GetAllInvestors() ([]domain.Investor, error)
+	VerifyUser(dto.AuthRequest) (*dto.AuthResponse, error)
 }
 
 type DefaultInvestorService struct {

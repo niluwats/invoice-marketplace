@@ -2,7 +2,6 @@ package service
 
 import (
 	"errors"
-	"log"
 	"strconv"
 	"time"
 
@@ -11,44 +10,47 @@ import (
 	"github.com/niluwats/invoice-marketplace/internal/repositories"
 )
 
+// types
 type BidService interface {
-	PlaceBid(bidRequest dto.BidRequest, invoiceRepo repositories.InvoiceRepository, investorRepo repositories.InvestorRepository) error
-	UpdateApproval(invoiceId string) error
+	PlaceBid(bidRequest dto.BidRequest) error
+	ApproveTrade(invoiceId string) error
 	GetAllBids(invoiceId string) ([]domain.Bid, error)
 }
 
 type DefaultBidService struct {
-	repo repositories.BidRepository
+	bidRepo      repositories.BidRepository
+	investorRepo repositories.InvestorRepository
+	invoiceRepo  repositories.InvoiceRepository
 }
 
-func NewBidService(repo repositories.BidRepository) DefaultBidService {
-	return DefaultBidService{repo}
+func NewBidService(bidRepo repositories.BidRepository, investorRepo repositories.InvestorRepository, invoiceRepo repositories.InvoiceRepository) DefaultBidService {
+	return DefaultBidService{bidRepo, investorRepo, invoiceRepo}
 }
 
-func (s DefaultBidService) PlaceBid(bidRequest dto.BidRequest, invoiceRepo repositories.InvoiceRepository, investorRepo repositories.InvestorRepository) error {
+// public methods
+func (s DefaultBidService) PlaceBid(bidRequest dto.BidRequest) error {
 	invoiceId := bidRequest.InvoiceId
 	bidAmount := bidRequest.BidAmount
 	investorId := bidRequest.InvestorId
 
-	log.Println("1", invoiceId)
-
-	//check if invoice is locked
-	err := checkIfInvoiceLocked(invoiceId, invoiceRepo)
+	invoice, err := s.invoiceRepo.FindById(invoiceId)
 	if err != nil {
 		return err
 	}
-	log.Println("2", invoiceId)
+
+	//check if invoice is valid to bid on
+	if invoice.IsLocked {
+		return errors.New("invoice is locked")
+	}
 
 	//check if investor's balance is sufficient
-	err = checkIfInvestorBalanceSufficient(investorId, bidAmount, investorRepo)
+	err = s.checkIfInvestorBalanceSufficient(investorId, bidAmount)
 	if err != nil {
 		return err
 	}
 
-	log.Println("3", invoiceId)
-
 	//trim if bid amount exceeds rest amount
-	newBidAmount, restBalance, err := trimIfBidAmountExceeds(invoiceId, bidAmount, invoiceRepo)
+	newBidAmount, restBalance, err := s.trimIfBidAmountExceeds(invoiceId, bidAmount, invoice.AskingPrice)
 	if err != nil {
 		return err
 	}
@@ -64,8 +66,7 @@ func (s DefaultBidService) PlaceBid(bidRequest dto.BidRequest, invoiceRepo repos
 		IsApproved: false,
 	}
 
-	log.Println(bid)
-	err = s.repo.Insert(bid, restBalance)
+	err = s.bidRepo.ProcessBid(bid, restBalance)
 	if err != nil {
 		return err
 	}
@@ -73,10 +74,10 @@ func (s DefaultBidService) PlaceBid(bidRequest dto.BidRequest, invoiceRepo repos
 	return nil
 }
 
-func (s DefaultBidService) UpdateApproval(invoiceId string) error {
+func (s DefaultBidService) ApproveTrade(invoiceId string) error {
 	intInvoiceId, _ := strconv.Atoi(invoiceId)
 
-	invoice, err := s.repo.GetTrade(intInvoiceId)
+	invoice, err := s.invoiceRepo.FindById(intInvoiceId)
 	if !invoice.IsLocked {
 		return errors.New("Invoice is not locked yet")
 	}
@@ -85,7 +86,7 @@ func (s DefaultBidService) UpdateApproval(invoiceId string) error {
 		return errors.New("Invoice is already traded")
 	}
 
-	err = s.repo.UpdateApproval(intInvoiceId, invoice.IssuerId, invoice.AmountEnclosed)
+	err = s.bidRepo.ProcessApproveBid(intInvoiceId, invoice.IssuerId, invoice.AskingPrice)
 	if err != nil {
 		return err
 	}
@@ -94,48 +95,32 @@ func (s DefaultBidService) UpdateApproval(invoiceId string) error {
 
 func (s DefaultBidService) GetAllBids(invoiceid string) ([]domain.Bid, error) {
 	invId, _ := strconv.Atoi(invoiceid)
-	bids, err := s.repo.GetAll(invId)
+	bids, err := s.bidRepo.GetAll(invId)
 	if err != nil {
 		return nil, err
 	}
 	return bids, nil
 }
 
-func checkIfInvoiceLocked(invoiceId int, invoiceRepo repositories.InvoiceRepository) error {
-	invoice, err := invoiceRepo.FindById(invoiceId)
+// private methods
+func (s DefaultBidService) checkIfInvestorBalanceSufficient(investorId int, bidAmount float64) error {
+	investor, err := s.investorRepo.FindById(investorId)
 	if err != nil {
 		return err
 	}
 
-	if invoice.IsLocked {
-		return errors.New("Invoice is locked! can't bid anymore")
-	}
-	return nil
-}
-
-func checkIfInvestorBalanceSufficient(investorId int, bidAmount float64, investorRepo repositories.InvestorRepository) error {
-	balance, err := investorRepo.FindInvestorBalance(investorId)
-	if err != nil {
-		return err
-	}
-
-	if balance < bidAmount {
+	if investor.Balance < bidAmount {
 		return errors.New("Investor's balance is insufficient!")
 	}
 	return nil
 }
 
-func trimIfBidAmountExceeds(invoiceId int, bidAmount float64, invoiceRepo repositories.InvoiceRepository) (newBidAmount float64, restBalance float64, err error) {
-	invoice, err := invoiceRepo.FindById(invoiceId)
+func (s DefaultBidService) trimIfBidAmountExceeds(invoiceId int, bidAmount, invoicePrice float64) (newBidAmount float64, restBalance float64, err error) {
+	investedSum, err := s.invoiceRepo.FindTotalInvestment(invoiceId)
 	if err != nil {
 		return 0, 0, err
 	}
-
-	investedSum, err := invoiceRepo.FindSum(invoiceId)
-	if err != nil {
-		return 0, 0, err
-	}
-	restInvoiceBalance := invoice.AmountEnclosed - investedSum
+	restInvoiceBalance := invoicePrice - investedSum
 	if restInvoiceBalance < bidAmount {
 		bidAmount = restInvoiceBalance
 	}

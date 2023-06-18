@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 
@@ -13,7 +14,8 @@ import (
 type InvestorRepository interface {
 	FindById(id int) (*domain.Investor, error)
 	FindAll() ([]domain.Investor, error)
-	FindInvestorBalance(id int) (float64, error)
+	FindByEmail(email string) (*domain.Investor, error)
+	Save(investor domain.Investor) error
 }
 
 type InvestorRepositoryDb struct {
@@ -28,12 +30,12 @@ func (repo InvestorRepositoryDb) FindById(id int) (*domain.Investor, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), dbTimeOut)
 	defer cancel()
 
-	query := "SELECT * FROM investors WHERE ID=$1"
+	query := "SELECT id,first_name,last_name,balance,is_issuer FROM investors WHERE ID=$1"
 
 	var investor domain.Investor
 	row := repo.db.QueryRow(ctx, query, id)
 
-	err := row.Scan(&investor.ID, &investor.FirstName, &investor.LastName, &investor.Balance)
+	err := row.Scan(&investor.ID, &investor.FirstName, &investor.LastName, &investor.Balance, &investor.IsIssuer)
 	if err != nil {
 		log.Println("Error scanning investor : ", err)
 		return nil, fmt.Errorf("Error scanning investor : %s", err)
@@ -46,7 +48,7 @@ func (repo InvestorRepositoryDb) FindAll() ([]domain.Investor, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), dbTimeOut)
 	defer cancel()
 
-	query := "SELECT * FROM investors"
+	query := "SELECT id,first_name,last_name,balance FROM investors"
 
 	investors := make([]domain.Investor, 0)
 	rows, err := repo.db.Query(ctx, query)
@@ -70,20 +72,45 @@ func (repo InvestorRepositoryDb) FindAll() ([]domain.Investor, error) {
 	return investors, nil
 }
 
-func (repo InvestorRepositoryDb) FindInvestorBalance(id int) (float64, error) {
+func (repo InvestorRepositoryDb) FindByEmail(email string) (*domain.Investor, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), dbTimeOut)
 	defer cancel()
 
-	query := "SELECT balance FROM investors WHERE id=$1"
-	row := repo.db.QueryRow(ctx, query, id)
+	query := "SELECT id,password,is_issuer FROM investors WHERE email=$1"
 
-	var balance float64
-	err := row.Scan(&balance)
+	var user domain.Investor
+	row := repo.db.QueryRow(ctx, query, email)
+
+	err := row.Scan(&user.ID, &user.Password, &user.IsIssuer)
 	if err != nil {
 		if err == pgx.ErrNoRows {
-			return 0, fmt.Errorf("No investor found")
+			return nil, fmt.Errorf("Email not found")
 		}
-		return 0, fmt.Errorf("Error scanning investor : %s", err)
+		log.Println("Error scanning investor : ", err)
+		return nil, fmt.Errorf("Error scanning investor : %s", err)
 	}
-	return balance, nil
+
+	return &user, nil
+}
+
+func (repo InvestorRepositoryDb) Save(investor domain.Investor) error {
+	ctx, cancel := context.WithTimeout(context.Background(), dbTimeOut)
+	defer cancel()
+
+	user, err := repo.FindByEmail(investor.Email)
+	if err != nil {
+		return err
+	}
+	if user != nil {
+		return errors.New("Email already taken ")
+	}
+
+	query := `INSERT INTO investors(first_name,last_name,balance,email,password,is_active) 
+				VALUES($1,$2,$3,$4,$5,true)`
+
+	_, err = repo.db.Exec(ctx, query, investor.FirstName, investor.LastName, investor.Balance, investor.Email, investor.Password)
+	if err != nil {
+		return fmt.Errorf("Error inserting invoice : %s", err)
+	}
+	return nil
 }

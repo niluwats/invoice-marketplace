@@ -30,12 +30,12 @@ func (s DefaultInvoiceService) NewInvoice(invRequest dto.InvoiceRequest) error {
 	}
 
 	invoice := domain.Invoice{
-		InvoiceNumber:  invRequest.InvoiceNumber,
-		CreatedOn:      time.Now(),
-		DueDate:        dueDate,
-		AmountDue:      invRequest.AmountDue,
-		AmountEnclosed: invRequest.AmountEnclosed,
-		IssuerId:       invRequest.IssuerId,
+		InvoiceNumber: invRequest.InvoiceNumber,
+		CreatedOn:     time.Now(),
+		DueDate:       dueDate,
+		AmountDue:     invRequest.AmountDue,
+		AskingPrice:   invRequest.AskingPrice,
+		IssuerId:      invRequest.IssuerId,
 	}
 	err = s.repo.Insert(invoice)
 	if err != nil {
