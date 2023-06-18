@@ -30,6 +30,10 @@ func (s DefaultInvoiceService) NewInvoice(invRequest dto.InvoiceRequest) *appErr
 		return appErr.NewUnexpectedError("Error parsing time format : " + err.Error())
 	}
 
+	if invRequest.IfInValidRequest() {
+		return appErr.NewBadRequest("All fields required")
+	}
+
 	invoice := domain.Invoice{
 		InvoiceNumber: invRequest.InvoiceNumber,
 		CreatedOn:     time.Now(),

@@ -1,6 +1,9 @@
 package dto
 
-import "unicode"
+import (
+	"fmt"
+	"unicode"
+)
 
 type AuthRequest struct {
 	Email    string `json:"email"`
@@ -18,6 +21,14 @@ type NewUserRequest struct {
 	Balance   float64 `json:"balance"`
 	Email     string  `json:"email"`
 	Password  string  `json:"password"`
+}
+
+func (req *AuthRequest) IfInValidRequest() bool {
+	return req.Email == "" || req.Password == ""
+}
+
+func (req *NewUserRequest) IfInValidRequest() bool {
+	return (req.FirstName == "" || req.LastName == "" || req.Email == "" || req.Password == "" || fmt.Sprintf("%f", req.Balance) == "")
 }
 
 func GetAuthResponse(id, token string) *AuthResponse {

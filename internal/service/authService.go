@@ -23,6 +23,10 @@ func NewAuthService(repo repositories.InvestorRepository) DefaultAuthService {
 }
 
 func (s DefaultAuthService) VerifyUser(req dto.AuthRequest) (*dto.AuthResponse, *appErr.AppError) {
+	if req.IfInValidRequest() {
+		return nil, appErr.NewValidationError("All fields required")
+	}
+
 	user, err_ := s.repo.FindByEmail(req.Email)
 	if err_ != nil {
 		return nil, err_
@@ -42,6 +46,10 @@ func (s DefaultAuthService) VerifyUser(req dto.AuthRequest) (*dto.AuthResponse, 
 }
 
 func (s DefaultAuthService) Register(req dto.NewUserRequest) *appErr.AppError {
+	if req.IfInValidRequest() {
+		return appErr.NewValidationError("All fields required")
+	}
+
 	if !req.IsValidPassword() {
 		return appErr.NewValidationError("Invalid password")
 	}

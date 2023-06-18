@@ -35,6 +35,10 @@ func (s DefaultBidService) PlaceBid(bidRequest dto.BidRequest) *appErr.AppError 
 	bidAmount := bidRequest.BidAmount
 	investorId := bidRequest.InvestorId
 
+	if bidRequest.IfInValidRequest() {
+		return appErr.NewValidationError("All fields required")
+	}
+
 	invoice, err_ := s.invoiceRepo.FindById(invoiceId)
 	if err_ != nil {
 		return err_
