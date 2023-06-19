@@ -173,7 +173,7 @@ $ go test -v
 - [Testify](https://github.com/stretchr/testify) - Testing services
 - [godotenv](https://github.com/joho/godotenv) - Loading env variables
 
-You can install above dependencies by running the following command:
+You can install above dependencies by running the following commands:
 
 ```
 $ go get -u github.com/go-chi/chi/v5
