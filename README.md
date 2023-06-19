@@ -90,14 +90,20 @@ For testing purposes of endpoints, you can use the following dummy users:
 
 ### Login as Investors
 
-- Username: `robert123@gmail.com`
-- Password: `Abc123!`
+- User 1
 
-- Username: `will123@gmail.com`
-- Password: `Abc123!`
+  - Username: `robert123@gmail.com`
+  - Password: `Abc123!`
 
-- Username: `sara123@gmail.com`
-- Password: `Abc123!`
+- User 2
+
+  - Username: `will123@gmail.com`
+  - Password: `Abc123!`
+
+- User 3
+
+  - Username: `sara123@gmail.com`
+  - Password: `Abc123!`
 
 This user represents an investor in the system. You can use these credentials to test the endpoints related to the investor's functionalities (bid on invoices & view functionalities).
 
@@ -118,11 +124,10 @@ The following endpoints are available in this API:
 
 | Method | Endpoint                | Description                  | Headers                                                               |
 | ------ | ----------------------- | ---------------------------- | --------------------------------------------------------------------- |
-| GET    | `/`                     | Root                         |                                                                       |
 | POST   | `/invoice`              | Create new invoice           | `Authorization: Bearer <access_token>,`                               |
 | GET    | `/invoice/{id}`         | View invoice                 | `Authorization: Bearer <access_token>,Content-Type: application/json` |
 | POST   | `/bid`                  | Place bid                    | `Authorization: Bearer <access_token>,Content-Type: application/json` |
-| POST   | `/invoice/{invoice_id}` | Approve trade                | `Authorization: Bearer <access_token>`                                |
+| PATCH  | `/invoice/{invoice_id}` | Approve trade                | `Authorization: Bearer <access_token>`                                |
 | GET    | `/bid/{invoice_id}`     | View all bids for an invoice | `Authorization: Bearer <access_token>`                                |
 | GET    | `/investor`             | View all investors           | `Authorization: Bearer <access_token>`                                |
 | GET    | `/investor/{id}`        | View investors by ID         | `Authorization: Bearer <access_token>`                                |
@@ -130,3 +135,23 @@ The following endpoints are available in this API:
 | GET    | `/issuer/{id}`          | View issuer by ID            | `Authorization: Bearer <access_token>`                                |
 | POST   | `/register`             | Register as an investor      | `Content-Type: application/json`                                      |
 | POST   | `/auth`                 | Get access token             | `Content-Type: application/json`                                      |
+
+## Dependencies
+
+- [go-chi](https://github.com/go-chi/chi) - web framework
+- [pgx postgresql driver](https://github.com/jackc/pgx/v5) - Golang PostgreSQL Driver and Toolkit
+- [Jwt](https://github.com/golang-jwt/jwt) - JWT
+- [Crypto](https://golang.org/x/crypto) - Hashing
+- [Testify](https://github.com/stretchr/testify) - Testing services
+- [godotenv](https://github.com/joho/godotenv) - Loading env variables
+
+You can install above dependencies by running the following command:
+
+```
+$ go get -u github.com/go-chi/chi/v5
+$ go get github.com/jackc/pgx/v5
+$ go get -u github.com/golang-jwt/jwt/v5
+$ go get github.com/joho/godotenv
+$ go get golang.org/x/crypto
+$ go get github.com/stretchr/testify
+```
