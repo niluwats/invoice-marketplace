@@ -67,4 +67,66 @@ $ docker-compose up --build
 
 4. Access the applicatin
 
-Once the containers are up and running, you can access the application at <localhost:8080>
+   Once the containers are up and running, you can access the application at http://localhost:8080
+
+## Postgres Server Login
+
+If you need to log in to the PostgreSQL server, follow these steps.
+
+1.  Ensure that you have PostgreSQL installed and running on your system.
+2.  Open a command-line interface or terminal.
+3.  Use the following command to log in to the PostgreSQL server:
+
+```
+ $ psql -U mktplaceUser -W -h localhost -p 5432 invoice_marketplace
+```
+
+4.  When prompted, enter the password "inUser123!" for the specified username.
+5.  If the credentials are correct, you should now be logged in to the PostgreSQL server via the command-line interface.
+
+## Dummy Users to test the application
+
+For testing purposes of endpoints, you can use the following dummy users:
+
+### Login as Investors
+
+- Username: `robert123@gmail.com`
+- Password: `Abc123!`
+
+- Username: `will123@gmail.com`
+- Password: `Abc123!`
+
+- Username: `sara123@gmail.com`
+- Password: `Abc123!`
+
+This user represents an investor in the system. You can use these credentials to test the endpoints related to the investor's functionalities (bid on invoices & view functionalities).
+
+### Login as Issuer
+
+- Username: `jane123@gmail.com`
+- Password: `Abc123!`
+
+This user represents an issuer in the system. You can use these credentials to test the endpoints related to the issuer's functionalities(create invoice,trade approvals & view functionalities).
+
+Please note that these are dummy user accounts created specifically for testing. Do not use real or sensitive information while testing.
+
+Remember to include the appropriate authentication headers or tokens when making API requests to simulate the behavior of authenticated users.
+
+## Endpoints
+
+The following endpoints are available in this API:
+
+| Method | Endpoint                | Description                  | Headers                                                               |
+| ------ | ----------------------- | ---------------------------- | --------------------------------------------------------------------- |
+| GET    | `/`                     | Root                         |                                                                       |
+| POST   | `/invoice`              | Create new invoice           | `Authorization: Bearer <access_token>,`                               |
+| GET    | `/invoice/{id}`         | View invoice                 | `Authorization: Bearer <access_token>,Content-Type: application/json` |
+| POST   | `/bid`                  | Place bid                    | `Authorization: Bearer <access_token>,Content-Type: application/json` |
+| POST   | `/invoice/{invoice_id}` | Approve trade                | `Authorization: Bearer <access_token>`                                |
+| GET    | `/bid/{invoice_id}`     | View all bids for an invoice | `Authorization: Bearer <access_token>`                                |
+| GET    | `/investor`             | View all investors           | `Authorization: Bearer <access_token>`                                |
+| GET    | `/investor/{id}`        | View investors by ID         | `Authorization: Bearer <access_token>`                                |
+| GET    | `/issuer`               | View all issuers             | `Authorization: Bearer <access_token>`                                |
+| GET    | `/issuer/{id}`          | View issuer by ID            | `Authorization: Bearer <access_token>`                                |
+| POST   | `/register`             | Register as an investor      | `Content-Type: application/json`                                      |
+| POST   | `/auth`                 | Get access token             | `Content-Type: application/json`                                      |
