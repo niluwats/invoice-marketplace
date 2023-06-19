@@ -94,6 +94,8 @@ For testing purposes of endpoints, you can use the following dummy users:
 
 ### Login as Investors
 
+ Investors can place bids on the invoices that issuers create.
+
 - User 1
 
   - Username: `robert123@gmail.com`
@@ -112,6 +114,8 @@ For testing purposes of endpoints, you can use the following dummy users:
 This user represents an investor in the system. You can use these credentials to test the endpoints related to the investor's functionalities (bid on invoices & view functionalities).
 
 ### Login as Issuer
+
+ Only issuers can create invoices and approve trades
 
 - Username: `jane123@gmail.com`
 - Password: `Abc123!`
