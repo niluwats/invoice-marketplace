@@ -114,8 +114,6 @@ This user represents an investor in the system. You can use these credentials to
 
 This user represents an issuer in the system. You can use these credentials to test the endpoints related to the issuer's functionalities(create invoice,trade approvals & view functionalities).
 
-Please note that these are dummy user accounts created specifically for testing. Do not use real or sensitive information while testing.
-
 Remember to include the appropriate authentication headers or tokens when making API requests to simulate the behavior of authenticated users.
 
 ## Endpoints
@@ -136,10 +134,34 @@ The following endpoints are available in this API:
 | POST   | `/register`             | Register as an investor      | `Content-Type: application/json`                                      |
 | POST   | `/auth`                 | Get access token             | `Content-Type: application/json`                                      |
 
+## Mock Testing
+
+The services in this application are tested using mock testing techniques to isolate dependencies and ensure reliable and efficient testing. Mock testing allows for the simulation of external dependencies, enabling focused testing of individual services.
+
+The following libraries and frameworks are utilized for mock testing in this project:
+
+- **Mockery**: Mockery is used to create mock objects for dependencies and define expected behaviors during unit testing.
+
+- **Testify**: Testify is the testing framework used to create test fucntionalities
+
+### Runnig Tests
+
+1. Open a command-line interface or terminal and navigate to the tests directory of the project.
+
+```
+$ cd ./internal/tests/services
+```
+
+2. Run tests
+
+```
+$ go test -v
+```
+
 ## Dependencies
 
 - [go-chi](https://github.com/go-chi/chi) - web framework
-- [pgx postgresql driver](https://github.com/jackc/pgx/v5) - Golang PostgreSQL Driver and Toolkit
+- [pgx postgresql driver](https://github.com/jackc/pgx) - Golang PostgreSQL Driver and Toolkit
 - [Jwt](https://github.com/golang-jwt/jwt) - JWT
 - [Crypto](https://golang.org/x/crypto) - Hashing
 - [Testify](https://github.com/stretchr/testify) - Testing services
