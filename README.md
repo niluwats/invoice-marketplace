@@ -130,9 +130,9 @@ The following endpoints are available in this API:
 | POST   | `/invoice`              | Create new invoice           | `Authorization: Bearer <access_token>,`                               |
 | GET    | `/invoice/{id}`         | View invoice by ID           | `Authorization: Bearer <access_token>,Content-Type: application/json` |
 | POST   | `/bid`                  | Place bid                    | `Authorization: Bearer <access_token>,Content-Type: application/json` |
-| GET    | `/bid`                  | View bid                     | `Authorization: Bearer <access_token>`                                |
+| GET    | `/bid/{id}`             | View bid                     | `Authorization: Bearer <access_token>`                                |
 | PATCH  | `/invoice/{invoice_id}` | Approve trade                | `Authorization: Bearer <access_token>`                                |
-| GET    | `/bid/{invoice_id}`     | View all bids for an invoice | `Authorization: Bearer <access_token>`                                |
+| GET    | `/bids/{invoice_id}`    | View all bids for an invoice | `Authorization: Bearer <access_token>`                                |
 | GET    | `/investor`             | View all investors           | `Authorization: Bearer <access_token>`                                |
 | GET    | `/investor/{id}`        | View investors by ID         | `Authorization: Bearer <access_token>`                                |
 | GET    | `/issuer`               | View all issuers             | `Authorization: Bearer <access_token>`                                |
