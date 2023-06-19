@@ -42,6 +42,34 @@ func (_m *BidRepository) GetAll(invoiceId int) ([]domain.Bid, *errors.AppError) 
 	return r0, r1
 }
 
+// GetBid provides a mock function with given fields: id
+func (_m *BidRepository) GetBid(id int) (*domain.Bid, *errors.AppError) {
+	ret := _m.Called(id)
+
+	var r0 *domain.Bid
+	var r1 *errors.AppError
+	if rf, ok := ret.Get(0).(func(int) (*domain.Bid, *errors.AppError)); ok {
+		return rf(id)
+	}
+	if rf, ok := ret.Get(0).(func(int) *domain.Bid); ok {
+		r0 = rf(id)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*domain.Bid)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(int) *errors.AppError); ok {
+		r1 = rf(id)
+	} else {
+		if ret.Get(1) != nil {
+			r1 = ret.Get(1).(*errors.AppError)
+		}
+	}
+
+	return r0, r1
+}
+
 // ProcessApproveBid provides a mock function with given fields: invoiceid, issuerid, amount
 func (_m *BidRepository) ProcessApproveBid(invoiceid int, issuerid int, amount float64) *errors.AppError {
 	ret := _m.Called(invoiceid, issuerid, amount)
@@ -59,19 +87,31 @@ func (_m *BidRepository) ProcessApproveBid(invoiceid int, issuerid int, amount f
 }
 
 // ProcessBid provides a mock function with given fields: bid, restBalance
-func (_m *BidRepository) ProcessBid(bid domain.Bid, restBalance float64) *errors.AppError {
+func (_m *BidRepository) ProcessBid(bid domain.Bid, restBalance float64) (*domain.Bid, *errors.AppError) {
 	ret := _m.Called(bid, restBalance)
 
-	var r0 *errors.AppError
-	if rf, ok := ret.Get(0).(func(domain.Bid, float64) *errors.AppError); ok {
+	var r0 *domain.Bid
+	var r1 *errors.AppError
+	if rf, ok := ret.Get(0).(func(domain.Bid, float64) (*domain.Bid, *errors.AppError)); ok {
+		return rf(bid, restBalance)
+	}
+	if rf, ok := ret.Get(0).(func(domain.Bid, float64) *domain.Bid); ok {
 		r0 = rf(bid, restBalance)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*errors.AppError)
+			r0 = ret.Get(0).(*domain.Bid)
 		}
 	}
 
-	return r0
+	if rf, ok := ret.Get(1).(func(domain.Bid, float64) *errors.AppError); ok {
+		r1 = rf(bid, restBalance)
+	} else {
+		if ret.Get(1) != nil {
+			r1 = ret.Get(1).(*errors.AppError)
+		}
+	}
+
+	return r0, r1
 }
 
 // NewBidRepository creates a new instance of BidRepository. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.

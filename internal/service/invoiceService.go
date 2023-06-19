@@ -11,8 +11,9 @@ import (
 )
 
 type InvoiceService interface {
-	NewInvoice(invRequest dto.InvoiceRequest) *appErr.AppError
+	NewInvoice(invRequest dto.InvoiceRequest) (*domain.Invoice, *appErr.AppError)
 	GetInvoice(id string) (*domain.Invoice, *appErr.AppError)
+	GetAllInvoices() ([]domain.Invoice, *appErr.AppError)
 }
 
 type DefaultInvoiceService struct {
@@ -23,14 +24,14 @@ func NewInvoiceService(repo repositories.InvoiceRepository) DefaultInvoiceServic
 	return DefaultInvoiceService{repo}
 }
 
-func (s DefaultInvoiceService) NewInvoice(invRequest dto.InvoiceRequest) *appErr.AppError {
+func (s DefaultInvoiceService) NewInvoice(invRequest dto.InvoiceRequest) (*domain.Invoice, *appErr.AppError) {
 	dueDate, err := time.Parse("2006-01-02", invRequest.DueDate)
 	if err != nil {
-		return appErr.NewUnexpectedError("Error parsing time format : " + err.Error())
+		return nil, appErr.NewUnexpectedError("Error parsing time format : " + err.Error())
 	}
 
 	if invRequest.IfInValidRequest() {
-		return appErr.NewBadRequest("All fields required")
+		return nil, appErr.NewBadRequest("All fields required")
 	}
 
 	invoice := domain.Invoice{
@@ -41,11 +42,11 @@ func (s DefaultInvoiceService) NewInvoice(invRequest dto.InvoiceRequest) *appErr
 		AskingPrice:   invRequest.AskingPrice,
 		IssuerId:      invRequest.IssuerId,
 	}
-	err_ := s.repo.Insert(invoice)
+	resp, err_ := s.repo.Insert(invoice)
 	if err_ != nil {
-		return err_
+		return nil, err_
 	}
-	return nil
+	return resp, nil
 }
 
 func (s DefaultInvoiceService) GetInvoice(id string) (*domain.Invoice, *appErr.AppError) {
@@ -55,4 +56,12 @@ func (s DefaultInvoiceService) GetInvoice(id string) (*domain.Invoice, *appErr.A
 		return nil, err_
 	}
 	return invoice, nil
+}
+
+func (s DefaultInvoiceService) GetAllInvoices() ([]domain.Invoice, *appErr.AppError) {
+	invoices, err_ := s.repo.FindAll()
+	if err_ != nil {
+		return nil, err_
+	}
+	return invoices, nil
 }

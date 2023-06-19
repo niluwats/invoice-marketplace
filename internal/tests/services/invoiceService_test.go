@@ -2,6 +2,7 @@ package mocks
 
 import (
 	"testing"
+	"time"
 
 	"github.com/niluwats/invoice-marketplace/internal/domain"
 	"github.com/niluwats/invoice-marketplace/internal/dto"
@@ -12,7 +13,14 @@ import (
 
 func TestInvoiceService_NewInvoice(t *testing.T) {
 	repo := &InvoiceRepository{}
-	repo.On("Insert", mock.AnythingOfType("domain.Invoice")).Return(nil).Once()
+	expectedResponse := &domain.Invoice{
+		InvoiceNumber: "RF-001",
+		IssuerId:      1,
+		AmountDue:     5000,
+		AskingPrice:   5000,
+		DueDate:       time.Date(2023, time.June, 30, 11, 20, 40, 45, time.Local),
+	}
+	repo.On("Insert", mock.AnythingOfType("domain.Invoice")).Return(expectedResponse, nil).Once()
 
 	invoiceRequest := dto.InvoiceRequest{
 		InvoiceNumber: "RF-001",
@@ -24,8 +32,9 @@ func TestInvoiceService_NewInvoice(t *testing.T) {
 
 	service := service.NewInvoiceService(repo)
 
-	err := service.NewInvoice(invoiceRequest)
+	invoiceCreated, err := service.NewInvoice(invoiceRequest)
 	assert.Nil(t, err)
+	assert.Equal(t, expectedResponse, invoiceCreated)
 }
 
 func TestInvoiceService_GetInvoice(t *testing.T) {

@@ -14,6 +14,34 @@ type InvoiceRepository struct {
 	mock.Mock
 }
 
+// FindAll provides a mock function with given fields:
+func (_m *InvoiceRepository) FindAll() ([]domain.Invoice, *errors.AppError) {
+	ret := _m.Called()
+
+	var r0 []domain.Invoice
+	var r1 *errors.AppError
+	if rf, ok := ret.Get(0).(func() ([]domain.Invoice, *errors.AppError)); ok {
+		return rf()
+	}
+	if rf, ok := ret.Get(0).(func() []domain.Invoice); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]domain.Invoice)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func() *errors.AppError); ok {
+		r1 = rf()
+	} else {
+		if ret.Get(1) != nil {
+			r1 = ret.Get(1).(*errors.AppError)
+		}
+	}
+
+	return r0, r1
+}
+
 // FindById provides a mock function with given fields: id
 func (_m *InvoiceRepository) FindById(id int) (*domain.Invoice, *errors.AppError) {
 	ret := _m.Called(id)
@@ -69,19 +97,31 @@ func (_m *InvoiceRepository) FindTotalInvestment(id int) (float64, *errors.AppEr
 }
 
 // Insert provides a mock function with given fields: invoice
-func (_m *InvoiceRepository) Insert(invoice domain.Invoice) *errors.AppError {
+func (_m *InvoiceRepository) Insert(invoice domain.Invoice) (*domain.Invoice, *errors.AppError) {
 	ret := _m.Called(invoice)
 
-	var r0 *errors.AppError
-	if rf, ok := ret.Get(0).(func(domain.Invoice) *errors.AppError); ok {
+	var r0 *domain.Invoice
+	var r1 *errors.AppError
+	if rf, ok := ret.Get(0).(func(domain.Invoice) (*domain.Invoice, *errors.AppError)); ok {
+		return rf(invoice)
+	}
+	if rf, ok := ret.Get(0).(func(domain.Invoice) *domain.Invoice); ok {
 		r0 = rf(invoice)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*errors.AppError)
+			r0 = ret.Get(0).(*domain.Invoice)
 		}
 	}
 
-	return r0
+	if rf, ok := ret.Get(1).(func(domain.Invoice) *errors.AppError); ok {
+		r1 = rf(invoice)
+	} else {
+		if ret.Get(1) != nil {
+			r1 = ret.Get(1).(*errors.AppError)
+		}
+	}
+
+	return r0, r1
 }
 
 // NewInvoiceRepository creates a new instance of InvoiceRepository. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.

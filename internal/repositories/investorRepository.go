@@ -94,20 +94,18 @@ func (repo InvestorRepositoryDb) Save(investor domain.Investor) *appErr.AppError
 	ctx, cancel := context.WithTimeout(context.Background(), dbTimeOut)
 	defer cancel()
 
-	user, err := repo.FindByEmail(investor.Email)
-	if err != nil {
-		return err
-	}
+	user, _ := repo.FindByEmail(investor.Email)
+
 	if user != nil {
 		return appErr.NewConflictError("Email already taken")
 	}
 
-	query := `INSERT INTO investors(first_name,last_name,balance,email,password,is_active) 
-				VALUES($1,$2,$3,$4,$5,true)`
+	query := `INSERT INTO investors(first_name,last_name,balance,email,password,is_active,is_issuer) 
+				VALUES($1,$2,$3,$4,$5,true,false)`
 
-	_, e := repo.db.Exec(ctx, query, investor.FirstName, investor.LastName, investor.Balance, investor.Email, investor.Password)
+	_, err := repo.db.Exec(ctx, query, investor.FirstName, investor.LastName, investor.Balance, investor.Email, investor.Password)
 	if err != nil {
-		return appErr.NewUnexpectedError("Error inserting invoice : " + e.Error())
+		return appErr.NewUnexpectedError("Error inserting invoice : " + err.Error())
 	}
 	return nil
 }

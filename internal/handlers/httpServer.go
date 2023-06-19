@@ -58,7 +58,10 @@ func StartServer() {
 		r.Get("/issuer/{id}", issuerHandler.viewIssuer)
 
 		r.Post("/bid", bidHandler.placeBid)
-		r.Get("/bid/{invoice_id}", bidHandler.viewAllBids)
+		r.Get("/bid/{id}", bidHandler.viewBid)
+		r.Get("/bids/{invoice_id}", bidHandler.viewAllBids)
+
+		r.Get("/invoice", invoiceHandler.viewAllInvoices)
 
 		r.Get("/invoice/{id}", invoiceHandler.viewInvoice)
 		r.With(auth_middleware.PermissionMiddleware).Post("/invoice", invoiceHandler.createInvoice)

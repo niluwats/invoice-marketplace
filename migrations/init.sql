@@ -68,7 +68,7 @@ VALUES (
         'Daves',
         10000.0,
         'jane123@gmail.com',
-        '',
+        '$2a$10$p.d6hCOF16/jvAhmt5yBK.5S2piteKX0KPHt3VQqFGWoIn1cESdp.',
         true,
         true
     );

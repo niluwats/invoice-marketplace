@@ -12,9 +12,10 @@ import (
 
 // types
 type BidService interface {
-	PlaceBid(bidRequest dto.BidRequest) *appErr.AppError
+	PlaceBid(bidRequest dto.BidRequest) (*domain.Bid, *appErr.AppError)
 	ApproveTrade(invoiceId string) *appErr.AppError
 	GetAllBids(invoiceId string) ([]domain.Bid, *appErr.AppError)
+	GetBid(id string) (*domain.Bid, *appErr.AppError)
 	checkIfInvestorBalanceSufficient(investorId int, bidAmount float64) *appErr.AppError
 	trimIfBidAmountExceeds(invoiceId int, bidAmount, invoicePrice float64) (newBidAmount float64, restBalance float64, err *appErr.AppError)
 }
@@ -30,35 +31,35 @@ func NewBidService(bidRepo repositories.BidRepository, investorRepo repositories
 }
 
 // public methods
-func (s DefaultBidService) PlaceBid(bidRequest dto.BidRequest) *appErr.AppError {
+func (s DefaultBidService) PlaceBid(bidRequest dto.BidRequest) (*domain.Bid, *appErr.AppError) {
 	invoiceId := bidRequest.InvoiceId
 	bidAmount := bidRequest.BidAmount
 	investorId := bidRequest.InvestorId
 
 	if bidRequest.IfInValidRequest() {
-		return appErr.NewValidationError("All fields required")
+		return nil, appErr.NewValidationError("All fields required")
 	}
 
 	invoice, err_ := s.invoiceRepo.FindById(invoiceId)
 	if err_ != nil {
-		return err_
+		return nil, err_
 	}
 
 	//check if invoice is valid to bid on
 	if invoice.IsLocked {
-		return appErr.NewForbiddenError("Invoice is locked")
+		return nil, appErr.NewForbiddenError("Invoice is locked")
 	}
 
 	//check if investor's balance is sufficient
 	err_ = s.checkIfInvestorBalanceSufficient(investorId, bidAmount)
 	if err_ != nil {
-		return err_
+		return nil, err_
 	}
 
 	//trim if bid amount exceeds rest amount
 	newBidAmount, restBalance, err_ := s.trimIfBidAmountExceeds(invoiceId, bidAmount, invoice.AskingPrice)
 	if err_ != nil {
-		return err_
+		return nil, err_
 	}
 
 	bidAmount = newBidAmount
@@ -72,12 +73,12 @@ func (s DefaultBidService) PlaceBid(bidRequest dto.BidRequest) *appErr.AppError 
 		IsApproved: false,
 	}
 
-	err_ = s.bidRepo.ProcessBid(bid, restBalance)
+	resp, err_ := s.bidRepo.ProcessBid(bid, restBalance)
 	if err_ != nil {
-		return err_
+		return nil, err_
 	}
 
-	return nil
+	return resp, nil
 }
 
 func (s DefaultBidService) ApproveTrade(invoiceId string) *appErr.AppError {
@@ -110,6 +111,16 @@ func (s DefaultBidService) GetAllBids(invoiceid string) ([]domain.Bid, *appErr.A
 		return nil, err_
 	}
 	return bids, nil
+}
+
+func (s DefaultBidService) GetBid(id string) (*domain.Bid, *appErr.AppError) {
+	bidId, _ := strconv.Atoi(id)
+
+	bid, err_ := s.bidRepo.GetBid(bidId)
+	if err_ != nil {
+		return nil, err_
+	}
+	return bid, nil
 }
 
 // private methods

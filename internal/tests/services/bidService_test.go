@@ -34,7 +34,16 @@ func TestBidService_PlaceBid(t *testing.T) {
 		IsIssuer:  true,
 	}
 
-	bidRepo.On("ProcessBid", mock.AnythingOfType("domain.Bid"), mock.Anything).Return(nil).Once()
+	expectedResponse := &domain.Bid{
+		ID:         1,
+		BidAmount:  1000,
+		IsApproved: false,
+		TimeStamp:  time.Date(2023, time.June, 10, 10, 20, 40, 45, time.Local),
+		InvestorId: 4,
+		InvoiceId:  1,
+	}
+
+	bidRepo.On("ProcessBid", mock.AnythingOfType("domain.Bid"), mock.Anything).Return(expectedResponse, nil).Once()
 	invoiceRepo.On("FindById", mock.Anything).Return(expectedInvoice, nil).Once()
 	invoiceRepo.On("FindTotalInvestment", mock.Anything).Return(float64(0), nil).Once()
 	investorRepo.On("FindById", mock.Anything).Return(expectedInvestor, nil).Once()
@@ -47,8 +56,9 @@ func TestBidService_PlaceBid(t *testing.T) {
 
 	service := service.NewBidService(bidRepo, investorRepo, invoiceRepo)
 
-	err := service.PlaceBid(bidRequest)
+	bid, err := service.PlaceBid(bidRequest)
 	assert.Nil(t, err)
+	assert.Equal(t, expectedResponse, bid)
 }
 
 func TestBidService_ApproveTrade(t *testing.T) {

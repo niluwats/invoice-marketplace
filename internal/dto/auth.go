@@ -11,7 +11,6 @@ type AuthRequest struct {
 }
 
 type AuthResponse struct {
-	ID          string `json:"id"`
 	AccessToken string `json:"access_token"`
 }
 
@@ -33,7 +32,6 @@ func (req *NewUserRequest) IfInValidRequest() bool {
 
 func GetAuthResponse(id, token string) *AuthResponse {
 	return &AuthResponse{
-		ID:          id,
 		AccessToken: token,
 	}
 }

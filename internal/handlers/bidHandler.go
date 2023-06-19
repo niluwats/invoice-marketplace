@@ -38,11 +38,11 @@ func (h BidHandler) placeBid(w http.ResponseWriter, r *http.Request) {
 		mutex.Lock()
 		defer mutex.Unlock()
 
-		err := h.service.PlaceBid(request)
+		bid, err := h.service.PlaceBid(request)
 		if err != nil {
 			writeResponse(w, err.Code, err.Message)
 		} else {
-			writeResponse(w, http.StatusCreated, "Bid placed successfully")
+			writeResponse(w, http.StatusCreated, &bid)
 		}
 	}
 }
@@ -64,5 +64,15 @@ func (h BidHandler) viewAllBids(w http.ResponseWriter, r *http.Request) {
 		writeResponse(w, err.Code, err.Message)
 	} else {
 		writeResponse(w, http.StatusOK, bids)
+	}
+}
+
+func (h BidHandler) viewBid(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	bid, err := h.service.GetBid(id)
+	if err != nil {
+		writeResponse(w, err.Code, err.Message)
+	} else {
+		writeResponse(w, http.StatusOK, bid)
 	}
 }

@@ -19,9 +19,11 @@ This is a golang RESTful API created with go-chi web framework and PostgreSQL as
 │   ├───service
 │   └───tests
 │       └───services
+├───migrations
 ├───pg-data
-└───pkg
-    └───errors
+├───pkg
+│   └───errors
+└───postman_collection
 
 ```
 
@@ -36,9 +38,11 @@ This is a golang RESTful API created with go-chi web framework and PostgreSQL as
   - auth - contains JWT validation & creation
   - dto - contains data transfer object types
   - tests - contains mocks of repos and test cases of service layer
+- migrations - init SQL script to create database, tables and insert dummy data
 - pg-data - persistent data volume of postgres db
 - pkg - holds the packages using accross different layers
   - errors - customized package for handling errors throughout project
+- postman_collection - contains postman collection (exported JSON file) to test endpoints
 
 ## Prerequisites
 
@@ -122,9 +126,11 @@ The following endpoints are available in this API:
 
 | Method | Endpoint                | Description                  | Headers                                                               |
 | ------ | ----------------------- | ---------------------------- | --------------------------------------------------------------------- |
+| GET    | `/invoice`              | View all invoices            | `Authorization: Bearer <access_token>,`                               |
 | POST   | `/invoice`              | Create new invoice           | `Authorization: Bearer <access_token>,`                               |
-| GET    | `/invoice/{id}`         | View invoice                 | `Authorization: Bearer <access_token>,Content-Type: application/json` |
+| GET    | `/invoice/{id}`         | View invoice by ID           | `Authorization: Bearer <access_token>,Content-Type: application/json` |
 | POST   | `/bid`                  | Place bid                    | `Authorization: Bearer <access_token>,Content-Type: application/json` |
+| GET    | `/bid`                  | View bid                     | `Authorization: Bearer <access_token>`                                |
 | PATCH  | `/invoice/{invoice_id}` | Approve trade                | `Authorization: Bearer <access_token>`                                |
 | GET    | `/bid/{invoice_id}`     | View all bids for an invoice | `Authorization: Bearer <access_token>`                                |
 | GET    | `/investor`             | View all investors           | `Authorization: Bearer <access_token>`                                |
