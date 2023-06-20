@@ -98,7 +98,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"email\":\"jane123@gmail.com\",\r\n    \"password\":\"Abc123!\"\r\n}",
+							"raw": "{\r\n    \"email\":\"will123@gmail.com\",\r\n    \"password\":\"Abc123!\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -183,7 +183,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEiLCJlbWFpbCI6IiIsInJvbGUiOiJpc3N1ZXIiLCJleHAiOjE2ODcyMzY2NDJ9.9ROFrG4NR7XEnL1ffG29nZoLmY1S5Y8S35YKYaGrpi8",
+									"value": "{{issuer_token}}",
 									"type": "string"
 								}
 							]
@@ -275,7 +275,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjMiLCJlbWFpbCI6IiIsInJvbGUiOiJpbnZlc3RvciIsImV4cCI6MTY4NzIzNjU3Nn0.46VzBtZihqXFxgd3jTrs24JmLx2oLyeT4fmOk8I5i3U",
+									"value": "{{issuer_token}}",
 									"type": "string"
 								}
 							]
@@ -367,7 +367,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjMiLCJlbWFpbCI6IiIsInJvbGUiOiJpbnZlc3RvciIsImV4cCI6MTY4NzIzNjU3Nn0.46VzBtZihqXFxgd3jTrs24JmLx2oLyeT4fmOk8I5i3U",
+									"value": "{{issuer_token}}",
 									"type": "string"
 								}
 							]
@@ -463,7 +463,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjMiLCJlbWFpbCI6IiIsInJvbGUiOiJpbnZlc3RvciIsImV4cCI6MTY4NzIzNjU3Nn0.46VzBtZihqXFxgd3jTrs24JmLx2oLyeT4fmOk8I5i3U",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjIiLCJlbWFpbCI6IiIsInJvbGUiOiJpc3N1ZXIiLCJleHAiOjE2ODczNjI3MzN9.TX7GIrQVYekybClVWSQY7iIBkqY2K_CmU9QPHlxCfNE",
 									"type": "string"
 								}
 							]
@@ -472,7 +472,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"invoice_id\":2,\r\n    \"bid_amount\":1000,\r\n    \"investor_id\":4\r\n}\r\n\r\n",
+							"raw": "{\r\n    \"invoice_id\":2,\r\n    \"bid_amount\":5000\r\n}\r\n\r\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -555,7 +555,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjMiLCJlbWFpbCI6IiIsInJvbGUiOiJpbnZlc3RvciIsImV4cCI6MTY4NzIzNjU3Nn0.46VzBtZihqXFxgd3jTrs24JmLx2oLyeT4fmOk8I5i3U",
+									"value": "{{investor_token}}",
 									"type": "string"
 								}
 							]
@@ -572,7 +572,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/bid/2",
+							"raw": "http://localhost:8080/bid/4",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -580,7 +580,7 @@
 							"port": "8080",
 							"path": [
 								"bid",
-								"2"
+								"4"
 							]
 						}
 					},
@@ -649,7 +649,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjMiLCJlbWFpbCI6IiIsInJvbGUiOiJpbnZlc3RvciIsImV4cCI6MTY4NzIzNjU3Nn0.46VzBtZihqXFxgd3jTrs24JmLx2oLyeT4fmOk8I5i3U",
+									"value": "{{investor_token}}",
 									"type": "string"
 								}
 							]
@@ -735,6 +735,16 @@
 				{
 					"name": "approve trade",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{issuer_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "PATCH",
 						"header": [
 							{
@@ -754,7 +764,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/invoice/39",
+							"raw": "http://localhost:8080/invoice/2/approve",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -762,7 +772,62 @@
 							"port": "8080",
 							"path": [
 								"invoice",
-								"39"
+								"2",
+								"approve"
+							],
+							"query": [
+								{
+									"key": "",
+									"value": null,
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "cancel trade",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{issuer_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "",
+								"value": "",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/invoice/2/cancel",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"invoice",
+								"2",
+								"cancel"
 							],
 							"query": [
 								{
@@ -911,7 +976,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEiLCJlbWFpbCI6IiIsInJvbGUiOiJpc3N1ZXIiLCJleHAiOjE2ODcyMzY2NDJ9.9ROFrG4NR7XEnL1ffG29nZoLmY1S5Y8S35YKYaGrpi8",
+									"value": "{{investor_token}}",
 									"type": "string"
 								}
 							]
@@ -935,7 +1000,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/issuer/3",
+							"raw": "http://localhost:8080/issuer/1",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -943,7 +1008,7 @@
 							"port": "8080",
 							"path": [
 								"issuer",
-								"3"
+								"1"
 							],
 							"query": [
 								{
@@ -1038,7 +1103,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEiLCJlbWFpbCI6IiIsInJvbGUiOiJpc3N1ZXIiLCJleHAiOjE2ODcyMzY2NDJ9.9ROFrG4NR7XEnL1ffG29nZoLmY1S5Y8S35YKYaGrpi8",
+									"value": "{{investor_token}}",
 									"type": "string"
 								}
 							]
@@ -1158,7 +1223,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEiLCJlbWFpbCI6IiIsInJvbGUiOiJpc3N1ZXIiLCJleHAiOjE2ODcyMzY2NDJ9.9ROFrG4NR7XEnL1ffG29nZoLmY1S5Y8S35YKYaGrpi8",
+									"value": "{{investor_token}}",
 									"type": "string"
 								}
 							]
@@ -1182,7 +1247,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/investor/1",
+							"raw": "http://localhost:8080/investor/",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -1190,7 +1255,7 @@
 							"port": "8080",
 							"path": [
 								"investor",
-								"1"
+								""
 							],
 							"query": [
 								{

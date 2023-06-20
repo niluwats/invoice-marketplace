@@ -14,6 +14,7 @@ import (
 type BidService interface {
 	PlaceBid(bidRequest dto.BidRequest) (*domain.Bid, *appErr.AppError)
 	ApproveTrade(invoiceId string) *appErr.AppError
+	RejectTrade(invoiceId string) *appErr.AppError
 	GetAllBids(invoiceId string) ([]domain.Bid, *appErr.AppError)
 	GetBid(id string) (*domain.Bid, *appErr.AppError)
 	checkIfInvestorBalanceSufficient(investorId int, bidAmount float64) *appErr.AppError
@@ -104,6 +105,30 @@ func (s DefaultBidService) ApproveTrade(invoiceId string) *appErr.AppError {
 	return nil
 }
 
+func (s DefaultBidService) RejectTrade(invoiceId string) *appErr.AppError {
+	intInvoiceId, _ := strconv.Atoi(invoiceId)
+
+	invoice, err_ := s.invoiceRepo.FindById(intInvoiceId)
+	if err_ != nil {
+		return err_
+	}
+
+	if !invoice.IsLocked {
+		return appErr.NewForbiddenError("Invoice is not locked yet")
+	}
+
+	if invoice.IsTraded {
+		return appErr.NewForbiddenError("Invoice is already traded")
+	}
+
+	err_ = s.bidRepo.ProcessCancelBid(intInvoiceId)
+	if err_ != nil {
+		return err_
+	}
+
+	return nil
+}
+
 func (s DefaultBidService) GetAllBids(invoiceid string) ([]domain.Bid, *appErr.AppError) {
 	invId, _ := strconv.Atoi(invoiceid)
 	bids, err_ := s.bidRepo.GetAll(invId)
@@ -120,6 +145,7 @@ func (s DefaultBidService) GetBid(id string) (*domain.Bid, *appErr.AppError) {
 	if err_ != nil {
 		return nil, err_
 	}
+
 	return bid, nil
 }
 
@@ -142,7 +168,8 @@ func (s DefaultBidService) trimIfBidAmountExceeds(invoiceId int, bidAmount, invo
 		return 0, 0, err_
 	}
 	restInvoiceBalance := invoicePrice - investedSum
-	if restInvoiceBalance < bidAmount {
+
+	if restInvoiceBalance <= bidAmount {
 		bidAmount = restInvoiceBalance
 	}
 	return bidAmount, restInvoiceBalance, nil

@@ -15,6 +15,7 @@ var dbTimeOut = time.Second * 3
 type BidRepository interface {
 	ProcessBid(bid domain.Bid, restBalance float64) (*domain.Bid, *appErr.AppError)
 	ProcessApproveBid(invoiceid, issuerid int, amount float64) *appErr.AppError
+	ProcessCancelBid(invoiceid int) *appErr.AppError
 	GetAll(invoiceId int) ([]domain.Bid, *appErr.AppError)
 	GetBid(id int) (*domain.Bid, *appErr.AppError)
 }
@@ -39,8 +40,8 @@ func (repo BidRepositoryDb) ProcessBid(bid domain.Bid, restBalance float64) (*do
 	defer tx.Rollback(ctx)
 
 	var id int
-	query := `INSERT INTO bids(invoice_id,bid_amount,timestamp,investor_id,is_approved) 
-			  VALUES($1,$2,$3,$4,$5) RETURNING id`
+	query := `INSERT INTO bids(invoice_id,bid_amount,timestamp,investor_id,is_approved,status) 
+			  VALUES($1,$2,$3,$4,$5,1) RETURNING id`
 
 	err = tx.QueryRow(ctx, query, bid.InvoiceId, bid.BidAmount, bid.TimeStamp, bid.InvestorId, false).Scan(&id)
 	if err != nil {
@@ -117,11 +118,54 @@ func (repo BidRepositoryDb) ProcessApproveBid(invoiceid, issuerid int, amount fl
 	return nil
 }
 
+func (repo BidRepositoryDb) ProcessCancelBid(invoiceid int) *appErr.AppError {
+	ctx, cancel := context.WithTimeout(context.Background(), dbTimeOut)
+	defer cancel()
+
+	tx, err := repo.db.BeginTx(ctx, pgx.TxOptions{})
+	if err != nil {
+		return appErr.NewUnexpectedError(err.Error())
+	}
+
+	defer tx.Rollback(ctx)
+
+	//update status of bid to 0 where invoiceid = __
+	query := "UPDATE bids SET status=0 WHERE invoice_id=$1"
+
+	_, err = tx.Exec(ctx, query, invoiceid)
+	if err != nil {
+		return appErr.NewUnexpectedError("Error updating bid status : " + err.Error())
+	}
+
+	//update invoice is_locked status to false
+	query = "UPDATE invoice SET is_locked=false WHERE id=$1"
+
+	_, err = tx.Exec(ctx, query, invoiceid)
+	if err != nil {
+		return appErr.NewUnexpectedError("Error updating invoice is_locked status : " + err.Error())
+	}
+
+	//update balances of investors who bid on that invoice
+	query = `UPDATE investors SET balance = investors.balance + bids.bid_amount FROM
+			bids WHERE bids.investor_id = investors.id AND bids.invoice_id = $1`
+
+	_, err = tx.Exec(ctx, query, invoiceid)
+	if err != nil {
+		return appErr.NewUnexpectedError("Error updating investor's balances : " + err.Error())
+	}
+
+	if err = tx.Commit(ctx); err != nil {
+		return appErr.NewUnexpectedError(err.Error())
+	}
+
+	return nil
+}
+
 func (repo BidRepositoryDb) GetAll(invoiceId int) ([]domain.Bid, *appErr.AppError) {
 	ctx, cancel := context.WithTimeout(context.Background(), dbTimeOut)
 	defer cancel()
 
-	query := "SELECT * FROM bids WHERE invoice_id=$1"
+	query := "SELECT * FROM bids WHERE invoice_id=$1 AND status=1 ORDER BY id"
 
 	var bids []domain.Bid
 	rows, err := repo.db.Query(ctx, query, invoiceId)
@@ -132,10 +176,11 @@ func (repo BidRepositoryDb) GetAll(invoiceId int) ([]domain.Bid, *appErr.AppErro
 	} else {
 		for rows.Next() {
 			var bid domain.Bid
-			err := rows.Scan(&bid.ID, &bid.BidAmount, &bid.TimeStamp, &bid.IsApproved, &bid.InvoiceId, &bid.InvestorId)
+			err := rows.Scan(&bid.ID, &bid.BidAmount, &bid.TimeStamp, &bid.IsApproved, &bid.InvoiceId, &bid.InvestorId, &bid.Status)
 			if err != nil {
 				return nil, appErr.NewUnexpectedError("Error scanning bids : " + err.Error())
 			}
+
 			bids = append(bids, bid)
 		}
 		return bids, nil
@@ -151,13 +196,12 @@ func (repo BidRepositoryDb) GetBid(id int) (*domain.Bid, *appErr.AppError) {
 	var bid domain.Bid
 	row := repo.db.QueryRow(ctx, query, id)
 
-	err := row.Scan(&bid.ID, &bid.BidAmount, &bid.TimeStamp, &bid.IsApproved, &bid.InvoiceId, &bid.InvestorId)
+	err := row.Scan(&bid.ID, &bid.BidAmount, &bid.TimeStamp, &bid.IsApproved, &bid.InvoiceId, &bid.InvestorId, &bid.Status)
 	if err != nil {
 		if err == pgx.ErrNoRows {
 			return nil, appErr.NewNotFoundError("Bid not found ")
 		}
 		return nil, appErr.NewUnexpectedError("Error querying bid : " + err.Error())
 	}
-
 	return &bid, nil
 }

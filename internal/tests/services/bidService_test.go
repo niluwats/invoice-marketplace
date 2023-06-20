@@ -85,6 +85,30 @@ func TestBidService_ApproveTrade(t *testing.T) {
 	assert.Nil(t, err)
 }
 
+func TestBidService_RejectTrade(t *testing.T) {
+	expectedInvoice := &domain.Invoice{
+		ID:            1,
+		InvoiceNumber: "RF-001",
+		AmountDue:     5000,
+		AskingPrice:   5000,
+		IsLocked:      true,
+		IsTraded:      false,
+		IssuerId:      1,
+	}
+
+	bidRepo := &BidRepository{}
+	investorRepo := &InvestorRepository{}
+	invoiceRepo := &InvoiceRepository{}
+
+	id := "1"
+	bidRepo.On("ProcessCancelBid", mock.Anything).Return(nil).Once()
+	invoiceRepo.On("FindById", mock.Anything).Return(expectedInvoice, nil).Once()
+
+	service := service.NewBidService(bidRepo, investorRepo, invoiceRepo)
+	err := service.RejectTrade(id)
+	assert.Nil(t, err)
+}
+
 func TestBidService_GetAllBids(t *testing.T) {
 	repo := &BidRepository{}
 	investorRepo := &InvestorRepository{}

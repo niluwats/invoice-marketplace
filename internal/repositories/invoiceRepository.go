@@ -2,7 +2,6 @@ package repositories
 
 import (
 	"context"
-	"log"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -39,7 +38,6 @@ func (repo InvoiceRepositoryDb) Insert(invoice domain.Invoice) (*domain.Invoice,
 		return nil, appErr.NewUnexpectedError("Error inserting invoice : " + err.Error())
 	}
 
-	log.Println(id)
 	createdInvoice, err_ := repo.FindById(id)
 	if err_ != nil {
 		return nil, err_
@@ -90,7 +88,7 @@ func (repo InvoiceRepositoryDb) FindAll() ([]domain.Invoice, *appErr.AppError) {
 	ctx, cancel := context.WithTimeout(context.Background(), dbTimeOut)
 	defer cancel()
 
-	query := "SELECT id,invoice_number,asking_price,created_on,is_locked,is_traded,issuer_id FROM invoice"
+	query := "SELECT id,invoice_number,asking_price,created_on,is_locked,is_traded,issuer_id FROM invoice ORDER BY id"
 
 	invoices := make([]domain.Invoice, 0)
 	rows, err := repo.db.Query(ctx, query)
@@ -116,7 +114,7 @@ func (repo InvoiceRepositoryDb) FindTotalInvestment(id int) (float64, *appErr.Ap
 	ctx, cancel := context.WithTimeout(context.Background(), dbTimeOut)
 	defer cancel()
 
-	query := "SELECT COALESCE(SUM(bid_amount),0)FROM bids WHERE invoice_id=$1"
+	query := "SELECT COALESCE(SUM(bid_amount),0)FROM bids WHERE invoice_id=$1 AND status=1"
 	row := repo.db.QueryRow(ctx, query, id)
 
 	var sum float64

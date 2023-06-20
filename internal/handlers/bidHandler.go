@@ -4,10 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 	"sync"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/niluwats/invoice-marketplace/internal/dto"
+	"github.com/niluwats/invoice-marketplace/internal/middleware"
 	"github.com/niluwats/invoice-marketplace/internal/service"
 )
 
@@ -26,6 +28,8 @@ func home(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h BidHandler) placeBid(w http.ResponseWriter, r *http.Request) {
+	user, _ := r.Context().Value(middleware.UserKey).(middleware.User)
+
 	var request dto.BidRequest
 
 	err := json.NewDecoder(r.Body).Decode(&request)
@@ -37,6 +41,8 @@ func (h BidHandler) placeBid(w http.ResponseWriter, r *http.Request) {
 
 		mutex.Lock()
 		defer mutex.Unlock()
+
+		request.InvestorId, _ = strconv.Atoi(user.InvestorId)
 
 		bid, err := h.service.PlaceBid(request)
 		if err != nil {
@@ -54,6 +60,16 @@ func (h BidHandler) approveTrade(w http.ResponseWriter, r *http.Request) {
 		writeResponse(w, err.Code, err.Message)
 	} else {
 		writeResponse(w, http.StatusOK, "Trade approved!")
+	}
+}
+
+func (h BidHandler) rejectTrade(w http.ResponseWriter, r *http.Request) {
+	invoiceId := chi.URLParam(r, "invoice_id")
+	err := h.service.RejectTrade(invoiceId)
+	if err != nil {
+		writeResponse(w, err.Code, err.Message)
+	} else {
+		writeResponse(w, http.StatusOK, "Trade canceled!")
 	}
 }
 

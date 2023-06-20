@@ -33,7 +33,7 @@ CREATE TABLE
         invoice_number VARCHAR NOT NULL,
         amount_due NUMERIC(10, 2),
         asking_price NUMERIC(10, 2),
-        created_on DATE,
+        created_on TIMESTAMP,
         duedate DATE,
         is_locked BOOLEAN,
         is_traded BOOLEAN,
@@ -45,10 +45,11 @@ CREATE TABLE
     IF NOT EXISTS bids(
         id SERIAL PRIMARY KEY,
         bid_amount NUMERIC(10, 2) NOT NULL,
-        timestamp DATE,
+        timestamp TIMESTAMP,
         is_approved BOOLEAN,
         invoice_id INT NOT NULL,
         investor_id INT,
+        status SMALLINT,
         FOREIGN KEY (invoice_id) REFERENCES invoice (id),
         FOREIGN KEY (investor_id) REFERENCES investors (id)
     );

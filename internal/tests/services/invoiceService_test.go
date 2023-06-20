@@ -58,3 +58,36 @@ func TestInvoiceService_GetInvoice(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, expectedInvoice, invoice)
 }
+
+func TestInvoiceService_GetAllInvoices(t *testing.T) {
+	repo := &InvoiceRepository{}
+
+	expectedInvoices := []domain.Invoice{
+		{
+			ID:            1,
+			InvoiceNumber: "RF-001",
+			AmountDue:     5000,
+			AskingPrice:   5000,
+			IsLocked:      true,
+			IsTraded:      true,
+			IssuerId:      1,
+			CreatedOn:     time.Date(2023, time.June, 12, 0, 0, 0, 0, time.Local),
+		},
+		{
+			ID:            2,
+			InvoiceNumber: "RF-002",
+			AmountDue:     5000,
+			AskingPrice:   5000,
+			IsLocked:      true,
+			IsTraded:      true,
+			IssuerId:      1,
+			CreatedOn:     time.Date(2023, time.June, 11, 0, 0, 0, 0, time.Local),
+		},
+	}
+
+	repo.On("FindAll").Return(expectedInvoices, nil).Once()
+	service := service.NewInvoiceService(repo)
+	invoices, err := service.GetAllInvoices()
+	assert.Nil(t, err)
+	assert.Equal(t, expectedInvoices, invoices)
+}

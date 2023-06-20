@@ -12,5 +12,5 @@ type BidRequest struct {
 }
 
 func (req *BidRequest) IfInValidRequest() bool {
-	return fmt.Sprintf("%f", req.BidAmount) == "" || strconv.Itoa(req.InvestorId) == "" || strconv.Itoa(req.InvoiceId) == ""
+	return fmt.Sprintf("%f", req.BidAmount) == "" || req.BidAmount <= 0 || strconv.Itoa(req.InvestorId) == "" || strconv.Itoa(req.InvoiceId) == ""
 }

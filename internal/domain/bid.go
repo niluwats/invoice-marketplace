@@ -9,4 +9,5 @@ type Bid struct {
 	TimeStamp  time.Time `json:"timestamp"`
 	InvestorId int       `json:"investor_id"`
 	InvoiceId  int       `json:"invoice_id"`
+	Status     int8      `json:"status"`
 }

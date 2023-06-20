@@ -65,7 +65,8 @@ func StartServer() {
 
 		r.Get("/invoice/{id}", invoiceHandler.viewInvoice)
 		r.With(auth_middleware.PermissionMiddleware).Post("/invoice", invoiceHandler.createInvoice)
-		r.With(auth_middleware.PermissionMiddleware).Patch("/invoice/{invoice_id}", bidHandler.approveTrade)
+		r.With(auth_middleware.PermissionMiddleware).Patch("/invoice/{invoice_id}/approve", bidHandler.approveTrade)
+		r.With(auth_middleware.PermissionMiddleware).Patch("/invoice/{invoice_id}/cancel", bidHandler.rejectTrade)
 	})
 
 	http.ListenAndServe(fmt.Sprintf(":%s", os.Getenv("WEB_PORT")), router)

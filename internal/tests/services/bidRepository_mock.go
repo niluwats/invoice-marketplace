@@ -114,6 +114,22 @@ func (_m *BidRepository) ProcessBid(bid domain.Bid, restBalance float64) (*domai
 	return r0, r1
 }
 
+// ProcessCancelBid provides a mock function with given fields: invoiceid
+func (_m *BidRepository) ProcessCancelBid(invoiceid int) *errors.AppError {
+	ret := _m.Called(invoiceid)
+
+	var r0 *errors.AppError
+	if rf, ok := ret.Get(0).(func(int) *errors.AppError); ok {
+		r0 = rf(invoiceid)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*errors.AppError)
+		}
+	}
+
+	return r0
+}
+
 // NewBidRepository creates a new instance of BidRepository. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
 // The first argument is typically a *testing.T value.
 func NewBidRepository(t interface {

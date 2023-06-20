@@ -48,7 +48,7 @@ func (repo InvestorRepositoryDb) FindAll() ([]domain.Investor, *appErr.AppError)
 	ctx, cancel := context.WithTimeout(context.Background(), dbTimeOut)
 	defer cancel()
 
-	query := "SELECT id,first_name,last_name,balance FROM investors"
+	query := "SELECT id,first_name,last_name,balance FROM investors ORDER BY id"
 
 	investors := make([]domain.Investor, 0)
 	rows, err := repo.db.Query(ctx, query)

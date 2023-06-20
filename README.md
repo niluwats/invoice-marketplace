@@ -20,7 +20,6 @@ This is a golang RESTful API created with go-chi web framework and PostgreSQL as
 │   └───tests
 │       └───services
 ├───migrations
-├───pg-data
 ├───pkg
 │   └───errors
 └───postman_collection
@@ -39,7 +38,6 @@ This is a golang RESTful API created with go-chi web framework and PostgreSQL as
   - dto - contains data transfer object types
   - tests - contains mocks of repos and test cases of service layer
 - migrations - init SQL script to create database, tables and insert dummy data
-- pg-data - persistent data volume of postgres db
 - pkg - holds the packages using accross different layers
   - errors - customized package for handling errors throughout project
 - postman_collection - contains postman collection (exported JSON file) to test endpoints
@@ -94,7 +92,7 @@ For testing purposes of endpoints, you can use the following dummy users:
 
 ### Login as Investors
 
- Investors can place bids on the invoices that issuers create.
+Investors can place bids on the invoices that issuers create.
 
 - User 1
 
@@ -115,7 +113,7 @@ This user represents an investor in the system. You can use these credentials to
 
 ### Login as Issuer
 
- Only issuers can create invoices and approve trades
+Only issuers can create invoices and approve trades
 
 - Username: `jane123@gmail.com`
 - Password: `Abc123!`
@@ -128,21 +126,22 @@ Remember to include the appropriate authentication headers or tokens when making
 
 The following endpoints are available in this API:
 
-| Method | Endpoint                | Description                  | Headers                                                               |
-| ------ | ----------------------- | ---------------------------- | --------------------------------------------------------------------- |
-| GET    | `/invoice`              | View all invoices            | `Authorization: Bearer <access_token>,`                               |
-| POST   | `/invoice`              | Create new invoice           | `Authorization: Bearer <access_token>,`                               |
-| GET    | `/invoice/{id}`         | View invoice by ID           | `Authorization: Bearer <access_token>,Content-Type: application/json` |
-| POST   | `/bid`                  | Place bid                    | `Authorization: Bearer <access_token>,Content-Type: application/json` |
-| GET    | `/bid/{id}`             | View bid                     | `Authorization: Bearer <access_token>`                                |
-| PATCH  | `/invoice/{invoice_id}` | Approve trade                | `Authorization: Bearer <access_token>`                                |
-| GET    | `/bids/{invoice_id}`    | View all bids for an invoice | `Authorization: Bearer <access_token>`                                |
-| GET    | `/investor`             | View all investors           | `Authorization: Bearer <access_token>`                                |
-| GET    | `/investor/{id}`        | View investors by ID         | `Authorization: Bearer <access_token>`                                |
-| GET    | `/issuer`               | View all issuers             | `Authorization: Bearer <access_token>`                                |
-| GET    | `/issuer/{id}`          | View issuer by ID            | `Authorization: Bearer <access_token>`                                |
-| POST   | `/register`             | Register as an investor      | `Content-Type: application/json`                                      |
-| POST   | `/auth`                 | Get access token             | `Content-Type: application/json`                                      |
+| Method | Endpoint                        | Description                  | Headers                                                               |
+| ------ | ------------------------------- | ---------------------------- | --------------------------------------------------------------------- |
+| GET    | `/invoice`                      | View all invoices            | `Authorization: Bearer <access_token>,`                               |
+| POST   | `/invoice`                      | Create new invoice           | `Authorization: Bearer <access_token>,`                               |
+| GET    | `/invoice/{id}`                 | View invoice by ID           | `Authorization: Bearer <access_token>,Content-Type: application/json` |
+| POST   | `/bid`                          | Place bid                    | `Authorization: Bearer <access_token>,Content-Type: application/json` |
+| GET    | `/bid/{id}`                     | View bid                     | `Authorization: Bearer <access_token>`                                |
+| PATCH  | `/invoice/{invoice_id}/approve` | Approve trade                | `Authorization: Bearer <access_token>`                                |
+| PATCH  | `/invoice/{invoice_id}/cancel`  | Cancel trade                 | `Authorization: Bearer <access_token>`                                |
+| GET    | `/bids/{invoice_id}`            | View all bids for an invoice | `Authorization: Bearer <access_token>`                                |
+| GET    | `/investor`                     | View all investors           | `Authorization: Bearer <access_token>`                                |
+| GET    | `/investor/{id}`                | View investors by ID         | `Authorization: Bearer <access_token>`                                |
+| GET    | `/issuer`                       | View all issuers             | `Authorization: Bearer <access_token>`                                |
+| GET    | `/issuer/{id}`                  | View issuer by ID            | `Authorization: Bearer <access_token>`                                |
+| POST   | `/register`                     | Register as an investor      | `Content-Type: application/json`                                      |
+| POST   | `/auth`                         | Get access token             | `Content-Type: application/json`                                      |
 
 ## Mock Testing
 
