@@ -1,6 +1,8 @@
 package service
 
 import (
+	"context"
+
 	"github.com/niluwats/invoice-marketplace/internal/auth"
 	"github.com/niluwats/invoice-marketplace/internal/domain"
 	"github.com/niluwats/invoice-marketplace/internal/dto"
@@ -10,8 +12,8 @@ import (
 )
 
 type AuthService interface {
-	VerifyUser(req dto.AuthRequest) (*dto.AuthResponse, *appErr.AppError)
-	Register(req dto.NewUserRequest) *appErr.AppError
+	VerifyUser(ctx context.Context, req dto.AuthRequest) (*dto.AuthResponse, *appErr.AppError)
+	Register(ctx context.Context, req dto.NewUserRequest) *appErr.AppError
 }
 
 type DefaultAuthService struct {
@@ -22,12 +24,12 @@ func NewAuthService(repo repositories.InvestorRepository) DefaultAuthService {
 	return DefaultAuthService{repo}
 }
 
-func (s DefaultAuthService) VerifyUser(req dto.AuthRequest) (*dto.AuthResponse, *appErr.AppError) {
+func (s DefaultAuthService) VerifyUser(ctx context.Context, req dto.AuthRequest) (*dto.AuthResponse, *appErr.AppError) {
 	if req.IfInValidRequest() {
 		return nil, appErr.NewValidationError("All fields required")
 	}
 
-	user, err_ := s.repo.FindByEmail(req.Email)
+	user, err_ := s.repo.FindByEmail(&ctx, req.Email)
 	if err_ != nil {
 		return nil, err_
 	}
@@ -45,7 +47,7 @@ func (s DefaultAuthService) VerifyUser(req dto.AuthRequest) (*dto.AuthResponse, 
 	return dto.GetAuthResponse(user.ID, tokenString), nil
 }
 
-func (s DefaultAuthService) Register(req dto.NewUserRequest) *appErr.AppError {
+func (s DefaultAuthService) Register(ctx context.Context, req dto.NewUserRequest) *appErr.AppError {
 	if req.IfInValidRequest() {
 		return appErr.NewValidationError("All fields required")
 	}
@@ -65,7 +67,7 @@ func (s DefaultAuthService) Register(req dto.NewUserRequest) *appErr.AppError {
 		Email:     req.Email,
 		Password:  string(hashedPw),
 	}
-	err_ := s.repo.Save(investor)
+	err_ := s.repo.Save(&ctx, investor)
 	if err_ != nil {
 		return err_
 	}

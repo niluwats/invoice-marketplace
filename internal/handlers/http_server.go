@@ -52,21 +52,21 @@ func StartServer() {
 		r.Use(auth_middleware.JWTMiddleware)
 
 		r.Get("/investor", investorHandler.viewAllInvestors)
-		r.Get("/investor/{id}", investorHandler.viewInvestor)
+		r.Get("/investor/{ID}", investorHandler.viewInvestor)
 
 		r.Get("/issuer", issuerHandler.viewAllIssuers)
-		r.Get("/issuer/{id}", issuerHandler.viewIssuer)
+		r.Get("/issuer/{ID}", issuerHandler.viewIssuer)
 
 		r.Post("/bid", bidHandler.placeBid)
-		r.Get("/bid/{id}", bidHandler.viewBid)
-		r.Get("/bids/{invoice_id}", bidHandler.viewAllBids)
+		r.Get("/bid/{ID}", bidHandler.viewBid)
+		r.Get("/bid/invoice/{invoice_ID}", bidHandler.viewAllBids)
 
 		r.Get("/invoice", invoiceHandler.viewAllInvoices)
 
-		r.Get("/invoice/{id}", invoiceHandler.viewInvoice)
+		r.Get("/invoice/{ID}", invoiceHandler.viewInvoice)
 		r.With(auth_middleware.PermissionMiddleware).Post("/invoice", invoiceHandler.createInvoice)
-		r.With(auth_middleware.PermissionMiddleware).Patch("/invoice/{invoice_id}/approve", bidHandler.approveTrade)
-		r.With(auth_middleware.PermissionMiddleware).Patch("/invoice/{invoice_id}/cancel", bidHandler.rejectTrade)
+		r.With(auth_middleware.PermissionMiddleware).Patch("/invoice/{invoice_ID}/approve", bidHandler.approveTrade)
+		r.With(auth_middleware.PermissionMiddleware).Patch("/invoice/{invoice_ID}/cancel", bidHandler.rejectTrade)
 	})
 
 	http.ListenAndServe(fmt.Sprintf(":%s", os.Getenv("WEB_PORT")), router)

@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"strconv"
 
 	"github.com/niluwats/invoice-marketplace/internal/domain"
@@ -9,7 +10,7 @@ import (
 )
 
 type InvestorService interface {
-	GetInvestor(id string) (*domain.Investor, *appErr.AppError)
+	GetInvestor(ctx context.Context, id string) (*domain.Investor, *appErr.AppError)
 	GetAllInvestors() ([]domain.Investor, *appErr.AppError)
 }
 
@@ -21,17 +22,17 @@ func NewInvestorService(repo repositories.InvestorRepository) DefaultInvestorSer
 	return DefaultInvestorService{repo}
 }
 
-func (s DefaultInvestorService) GetInvestor(id string) (*domain.Investor, *appErr.AppError) {
+func (s DefaultInvestorService) GetInvestor(ctx context.Context, id string) (*domain.Investor, *appErr.AppError) {
 	investorId, _ := strconv.Atoi(id)
-	investor, err_ := s.repo.FindById(investorId)
+	investor, err_ := s.repo.FindById(&ctx, investorId)
 	if err_ != nil {
 		return nil, err_
 	}
 	return investor, nil
 }
 
-func (s DefaultInvestorService) GetAllInvestors() ([]domain.Investor, *appErr.AppError) {
-	investors, err_ := s.repo.FindAll()
+func (s DefaultInvestorService) GetAllInvestors(ctx context.Context) ([]domain.Investor, *appErr.AppError) {
+	investors, err_ := s.repo.FindAll(&ctx)
 	if err_ != nil {
 		return nil, err_
 	}

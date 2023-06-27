@@ -20,7 +20,7 @@ func (h InvoiceHandler) createInvoice(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		writeResponse(w, http.StatusBadRequest, err.Error())
 	} else {
-		resp, err := h.service.NewInvoice(request)
+		resp, err := h.service.NewInvoice(r.Context(), request)
 		if err != nil {
 			writeResponse(w, err.Code, err.Message)
 		} else {
@@ -30,9 +30,9 @@ func (h InvoiceHandler) createInvoice(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h InvoiceHandler) viewInvoice(w http.ResponseWriter, r *http.Request) {
-	invoiceId := chi.URLParam(r, "id")
+	invoiceId := chi.URLParam(r, "ID")
 
-	resp, err := h.service.GetInvoice(invoiceId)
+	resp, err := h.service.GetInvoice(r.Context(), invoiceId)
 	if err != nil {
 		writeResponse(w, err.Code, err.Message)
 	} else {
@@ -41,7 +41,7 @@ func (h InvoiceHandler) viewInvoice(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h InvoiceHandler) viewAllInvoices(w http.ResponseWriter, r *http.Request) {
-	resp, err := h.service.GetAllInvoices()
+	resp, err := h.service.GetAllInvoices(r.Context())
 	if err != nil {
 		writeResponse(w, err.Code, err.Message)
 	} else {

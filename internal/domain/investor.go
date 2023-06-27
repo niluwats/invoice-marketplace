@@ -9,7 +9,7 @@ type Investor struct {
 	Balance   float64 `json:"balance,omitempty"`
 	Email     string  `json:"email,omitempty"`
 	Password  string  `json:"password,omitempty"`
-	IsActive  bool    `json:"is_active,omitempty"`
+	Status    bool    `json:"status,omitempty"`
 	IsIssuer  bool    `json:"is_issuer,omitempty"`
 }
 

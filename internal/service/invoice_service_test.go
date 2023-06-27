@@ -1,18 +1,19 @@
-package mocks
+package service
 
 import (
+	"context"
 	"testing"
 	"time"
 
 	"github.com/niluwats/invoice-marketplace/internal/domain"
 	"github.com/niluwats/invoice-marketplace/internal/dto"
-	"github.com/niluwats/invoice-marketplace/internal/service"
+	mocks "github.com/niluwats/invoice-marketplace/internal/mocks/repos"
 	"github.com/stretchr/testify/assert"
 	mock "github.com/stretchr/testify/mock"
 )
 
 func TestInvoiceService_NewInvoice(t *testing.T) {
-	repo := &InvoiceRepository{}
+	repo := &mocks.InvoiceRepository{}
 	expectedResponse := &domain.Invoice{
 		InvoiceNumber: "RF-001",
 		IssuerId:      1,
@@ -20,7 +21,8 @@ func TestInvoiceService_NewInvoice(t *testing.T) {
 		AskingPrice:   5000,
 		DueDate:       time.Date(2023, time.June, 30, 11, 20, 40, 45, time.Local),
 	}
-	repo.On("Insert", mock.AnythingOfType("domain.Invoice")).Return(expectedResponse, nil).Once()
+	repo.On("FindIfExistsByNo", mock.Anything, mock.Anything).Return(false).Once()
+	repo.On("Insert", mock.Anything, mock.AnythingOfType("domain.Invoice")).Return(expectedResponse, nil).Once()
 
 	invoiceRequest := dto.InvoiceRequest{
 		InvoiceNumber: "RF-001",
@@ -30,15 +32,15 @@ func TestInvoiceService_NewInvoice(t *testing.T) {
 		DueDate:       "2023-06-30",
 	}
 
-	service := service.NewInvoiceService(repo)
+	service := NewInvoiceService(repo)
 
-	invoiceCreated, err := service.NewInvoice(invoiceRequest)
+	invoiceCreated, err := service.NewInvoice(context.Background(), invoiceRequest)
 	assert.Nil(t, err)
 	assert.Equal(t, expectedResponse, invoiceCreated)
 }
 
 func TestInvoiceService_GetInvoice(t *testing.T) {
-	repo := &InvoiceRepository{}
+	repo := &mocks.InvoiceRepository{}
 
 	id := "40"
 
@@ -51,16 +53,16 @@ func TestInvoiceService_GetInvoice(t *testing.T) {
 		IsTraded:      true,
 		IssuerId:      3,
 	}
-	repo.On("FindById", mock.Anything).Return(expectedInvoice, nil).Once()
+	repo.On("FindById", mock.Anything, mock.Anything).Return(expectedInvoice, nil).Once()
 
-	service := service.NewInvoiceService(repo)
-	invoice, err := service.GetInvoice(id)
+	service := NewInvoiceService(repo)
+	invoice, err := service.GetInvoice(context.Background(), id)
 	assert.Nil(t, err)
 	assert.Equal(t, expectedInvoice, invoice)
 }
 
 func TestInvoiceService_GetAllInvoices(t *testing.T) {
-	repo := &InvoiceRepository{}
+	repo := &mocks.InvoiceRepository{}
 
 	expectedInvoices := []domain.Invoice{
 		{
@@ -85,9 +87,9 @@ func TestInvoiceService_GetAllInvoices(t *testing.T) {
 		},
 	}
 
-	repo.On("FindAll").Return(expectedInvoices, nil).Once()
-	service := service.NewInvoiceService(repo)
-	invoices, err := service.GetAllInvoices()
+	repo.On("FindAll", mock.Anything).Return(expectedInvoices, nil).Once()
+	service := NewInvoiceService(repo)
+	invoices, err := service.GetAllInvoices(context.Background())
 	assert.Nil(t, err)
 	assert.Equal(t, expectedInvoices, invoices)
 }

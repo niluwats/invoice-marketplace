@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"strconv"
 
 	"github.com/niluwats/invoice-marketplace/internal/dto"
@@ -9,8 +10,8 @@ import (
 )
 
 type IssuerService interface {
-	GetIssuer(id string) (*dto.IssuerResponse, *appErr.AppError)
-	GetAllIssuers() ([]dto.IssuerResponse, *appErr.AppError)
+	GetIssuer(ctx context.Context, id string) (*dto.IssuerResponse, *appErr.AppError)
+	GetAllIssuers(ctx context.Context) ([]dto.IssuerResponse, *appErr.AppError)
 }
 
 type DefaultIssuerService struct {
@@ -21,10 +22,10 @@ func NewIssuerService(repo repositories.IssuerRepository) DefaultIssuerService {
 	return DefaultIssuerService{repo}
 }
 
-func (s DefaultIssuerService) GetIssuer(id string) (*dto.IssuerResponse, *appErr.AppError) {
+func (s DefaultIssuerService) GetIssuer(ctx context.Context, id string) (*dto.IssuerResponse, *appErr.AppError) {
 	issuerId, _ := strconv.Atoi(id)
 
-	issuer, err_ := s.repo.FindById(issuerId)
+	issuer, err_ := s.repo.FindById(&ctx, issuerId)
 	if err_ != nil {
 		return nil, err_
 	}
@@ -33,8 +34,8 @@ func (s DefaultIssuerService) GetIssuer(id string) (*dto.IssuerResponse, *appErr
 	return &response, nil
 }
 
-func (s DefaultIssuerService) GetAllIssuers() ([]dto.IssuerResponse, *appErr.AppError) {
-	issuers, err_ := s.repo.FindAll()
+func (s DefaultIssuerService) GetAllIssuers(ctx context.Context) ([]dto.IssuerResponse, *appErr.AppError) {
+	issuers, err_ := s.repo.FindAll(&ctx)
 	if err_ != nil {
 		return nil, err_
 	}

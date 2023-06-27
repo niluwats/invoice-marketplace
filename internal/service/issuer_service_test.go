@@ -1,17 +1,18 @@
-package mocks
+package service
 
 import (
+	"context"
 	"testing"
 
 	"github.com/niluwats/invoice-marketplace/internal/domain"
 	"github.com/niluwats/invoice-marketplace/internal/dto"
-	"github.com/niluwats/invoice-marketplace/internal/service"
+	mocks "github.com/niluwats/invoice-marketplace/internal/mocks/repos"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
 func TestIssuerService_GetIssuer(t *testing.T) {
-	repo := &IssuerRepository{}
+	repo := &mocks.IssuerRepository{}
 
 	id := "1"
 	expectedIssuer := &domain.Issuer{
@@ -28,10 +29,10 @@ func TestIssuerService_GetIssuer(t *testing.T) {
 		Balance:     8000,
 	}
 
-	repo.On("FindById", mock.Anything).Return(expectedIssuer, nil).Once()
+	repo.On("FindById", mock.Anything, mock.Anything).Return(expectedIssuer, nil).Once()
 
-	service := service.NewIssuerService(repo)
-	issuer, err := service.GetIssuer(id)
+	service := NewIssuerService(repo)
+	issuer, err := service.GetIssuer(context.Background(), id)
 	assert.Nil(t, err)
 	assert.Equal(t, expectedResponse, issuer)
 }
@@ -66,12 +67,12 @@ func TestIssuerService_GetAllIssuers(t *testing.T) {
 		},
 	}
 
-	repo := &IssuerRepository{}
-	repo.On("FindAll").Return(expectedIssuers, nil).Once()
+	repo := &mocks.IssuerRepository{}
+	repo.On("FindAll", mock.Anything).Return(expectedIssuers, nil).Once()
 
-	service := service.NewIssuerService(repo)
+	service := NewIssuerService(repo)
 
-	issuers, err := service.GetAllIssuers()
+	issuers, err := service.GetAllIssuers(context.Background())
 	assert.Nil(t, err)
 	assert.Equal(t, expectedResponse, issuers)
 }

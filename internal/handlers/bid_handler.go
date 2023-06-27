@@ -5,15 +5,12 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"sync"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/niluwats/invoice-marketplace/internal/dto"
 	"github.com/niluwats/invoice-marketplace/internal/middleware"
 	"github.com/niluwats/invoice-marketplace/internal/service"
 )
-
-var mutexMap sync.Map
 
 type BidHandler struct {
 	service service.DefaultBidService
@@ -29,22 +26,15 @@ func home(w http.ResponseWriter, r *http.Request) {
 
 func (h BidHandler) placeBid(w http.ResponseWriter, r *http.Request) {
 	user, _ := r.Context().Value(middleware.UserKey).(middleware.User)
-
 	var request dto.BidRequest
 
 	err := json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
 		writeResponse(w, http.StatusBadRequest, err.Error())
 	} else {
-		invoiceMutex, _ := mutexMap.LoadOrStore(request.InvoiceId, &sync.Mutex{})
-		mutex := invoiceMutex.(*sync.Mutex)
-
-		mutex.Lock()
-		defer mutex.Unlock()
-
 		request.InvestorId, _ = strconv.Atoi(user.InvestorId)
 
-		bid, err := h.service.PlaceBid(request)
+		bid, err := h.service.PlaceBid(r.Context(), request)
 		if err != nil {
 			writeResponse(w, err.Code, err.Message)
 		} else {
@@ -54,8 +44,8 @@ func (h BidHandler) placeBid(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h BidHandler) approveTrade(w http.ResponseWriter, r *http.Request) {
-	invoiceId := chi.URLParam(r, "invoice_id")
-	err := h.service.ApproveTrade(invoiceId)
+	invoiceId := chi.URLParam(r, "invoice_ID")
+	err := h.service.ApproveTrade(r.Context(), invoiceId)
 	if err != nil {
 		writeResponse(w, err.Code, err.Message)
 	} else {
@@ -64,8 +54,8 @@ func (h BidHandler) approveTrade(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h BidHandler) rejectTrade(w http.ResponseWriter, r *http.Request) {
-	invoiceId := chi.URLParam(r, "invoice_id")
-	err := h.service.RejectTrade(invoiceId)
+	invoiceId := chi.URLParam(r, "invoice_ID")
+	err := h.service.RejectTrade(r.Context(), invoiceId)
 	if err != nil {
 		writeResponse(w, err.Code, err.Message)
 	} else {
@@ -74,8 +64,8 @@ func (h BidHandler) rejectTrade(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h BidHandler) viewAllBids(w http.ResponseWriter, r *http.Request) {
-	invoiceId := chi.URLParam(r, "invoice_id")
-	bids, err := h.service.GetAllBids(invoiceId)
+	invoiceId := chi.URLParam(r, "invoice_ID")
+	bids, err := h.service.GetAllBids(r.Context(), invoiceId)
 	if err != nil {
 		writeResponse(w, err.Code, err.Message)
 	} else {
@@ -84,8 +74,8 @@ func (h BidHandler) viewAllBids(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h BidHandler) viewBid(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
-	bid, err := h.service.GetBid(id)
+	id := chi.URLParam(r, "ID")
+	bid, err := h.service.GetBid(r.Context(), id)
 	if err != nil {
 		writeResponse(w, err.Code, err.Message)
 	} else {

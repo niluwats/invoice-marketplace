@@ -14,9 +14,9 @@ type IssuerHandler struct {
 }
 
 func (h IssuerHandler) viewIssuer(w http.ResponseWriter, r *http.Request) {
-	issuerId := chi.URLParam(r, "id")
+	issuerId := chi.URLParam(r, "ID")
 
-	resp, err := h.service.GetIssuer(issuerId)
+	resp, err := h.service.GetIssuer(r.Context(), issuerId)
 	if err != nil {
 		writeResponse(w, err.Code, err.Message)
 	} else {
@@ -25,7 +25,7 @@ func (h IssuerHandler) viewIssuer(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h IssuerHandler) viewAllIssuers(w http.ResponseWriter, r *http.Request) {
-	resp, err := h.service.GetAllIssuers()
+	resp, err := h.service.GetAllIssuers(r.Context())
 	if err != nil {
 		writeResponse(w, err.Code, err.Message)
 	} else {

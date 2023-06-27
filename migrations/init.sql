@@ -15,7 +15,7 @@ CREATE TABLE
         balance NUMERIC(10, 2),
         email VARCHAR,
         password VARCHAR,
-        is_active BOOLEAN,
+        status BOOLEAN,
         is_issuer BOOLEAN
     );
 
@@ -45,7 +45,7 @@ CREATE TABLE
     IF NOT EXISTS bids(
         id SERIAL PRIMARY KEY,
         bid_amount NUMERIC(10, 2) NOT NULL,
-        timestamp TIMESTAMP,
+        created_at TIMESTAMP,
         is_approved BOOLEAN,
         invoice_id INT NOT NULL,
         investor_id INT,
@@ -61,7 +61,7 @@ INSERT INTO
         balance,
         email,
         password,
-        is_active,
+        status,
         is_issuer
     )
 VALUES (
@@ -81,7 +81,7 @@ INSERT INTO
         balance,
         email,
         password,
-        is_active,
+        status,
         is_issuer
     )
 VALUES (
@@ -101,7 +101,7 @@ INSERT INTO
         balance,
         email,
         password,
-        is_active,
+        status,
         is_issuer
     )
 VALUES (
@@ -121,7 +121,7 @@ INSERT INTO
         balance,
         email,
         password,
-        is_active,
+        status,
         is_issuer
     )
 VALUES (
@@ -141,7 +141,7 @@ INSERT INTO
         balance,
         email,
         password,
-        is_active,
+        status,
         is_issuer
     )
 VALUES (

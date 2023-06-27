@@ -22,7 +22,7 @@ func (h AuthHandler) authenticate(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		writeResponse(w, http.StatusBadRequest, err.Error())
 	} else {
-		response, err := h.service.VerifyUser(request)
+		response, err := h.service.VerifyUser(r.Context(), request)
 		if err != nil {
 			writeResponse(w, err.Code, err.Message)
 		} else {
@@ -37,7 +37,7 @@ func (h AuthHandler) register(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		writeResponse(w, http.StatusBadRequest, err.Error())
 	} else {
-		err := h.service.Register(request)
+		err := h.service.Register(r.Context(), request)
 		if err != nil {
 			writeResponse(w, err.Code, err.Message)
 		} else {

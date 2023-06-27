@@ -3,6 +3,8 @@
 package mocks
 
 import (
+	context "context"
+
 	domain "github.com/niluwats/invoice-marketplace/internal/domain"
 	errors "github.com/niluwats/invoice-marketplace/pkg/errors"
 
@@ -14,25 +16,25 @@ type IssuerRepository struct {
 	mock.Mock
 }
 
-// FindAll provides a mock function with given fields:
-func (_m *IssuerRepository) FindAll() ([]domain.Issuer, *errors.AppError) {
-	ret := _m.Called()
+// FindAll provides a mock function with given fields: ctx
+func (_m *IssuerRepository) FindAll(ctx *context.Context) ([]domain.Issuer, *errors.AppError) {
+	ret := _m.Called(ctx)
 
 	var r0 []domain.Issuer
 	var r1 *errors.AppError
-	if rf, ok := ret.Get(0).(func() ([]domain.Issuer, *errors.AppError)); ok {
-		return rf()
+	if rf, ok := ret.Get(0).(func(*context.Context) ([]domain.Issuer, *errors.AppError)); ok {
+		return rf(ctx)
 	}
-	if rf, ok := ret.Get(0).(func() []domain.Issuer); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(*context.Context) []domain.Issuer); ok {
+		r0 = rf(ctx)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]domain.Issuer)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func() *errors.AppError); ok {
-		r1 = rf()
+	if rf, ok := ret.Get(1).(func(*context.Context) *errors.AppError); ok {
+		r1 = rf(ctx)
 	} else {
 		if ret.Get(1) != nil {
 			r1 = ret.Get(1).(*errors.AppError)
@@ -42,25 +44,25 @@ func (_m *IssuerRepository) FindAll() ([]domain.Issuer, *errors.AppError) {
 	return r0, r1
 }
 
-// FindById provides a mock function with given fields: id
-func (_m *IssuerRepository) FindById(id int) (*domain.Issuer, *errors.AppError) {
-	ret := _m.Called(id)
+// FindById provides a mock function with given fields: ctx, id
+func (_m *IssuerRepository) FindById(ctx *context.Context, id int) (*domain.Issuer, *errors.AppError) {
+	ret := _m.Called(ctx, id)
 
 	var r0 *domain.Issuer
 	var r1 *errors.AppError
-	if rf, ok := ret.Get(0).(func(int) (*domain.Issuer, *errors.AppError)); ok {
-		return rf(id)
+	if rf, ok := ret.Get(0).(func(*context.Context, int) (*domain.Issuer, *errors.AppError)); ok {
+		return rf(ctx, id)
 	}
-	if rf, ok := ret.Get(0).(func(int) *domain.Issuer); ok {
-		r0 = rf(id)
+	if rf, ok := ret.Get(0).(func(*context.Context, int) *domain.Issuer); ok {
+		r0 = rf(ctx, id)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*domain.Issuer)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(int) *errors.AppError); ok {
-		r1 = rf(id)
+	if rf, ok := ret.Get(1).(func(*context.Context, int) *errors.AppError); ok {
+		r1 = rf(ctx, id)
 	} else {
 		if ret.Get(1) != nil {
 			r1 = ret.Get(1).(*errors.AppError)

@@ -10,8 +10,8 @@ import (
 )
 
 type IssuerRepository interface {
-	FindById(id int) (*domain.Issuer, *appErr.AppError)
-	FindAll() ([]domain.Issuer, *appErr.AppError)
+	FindById(ctx *context.Context, id int) (*domain.Issuer, *appErr.AppError)
+	FindAll(ctx *context.Context) ([]domain.Issuer, *appErr.AppError)
 }
 
 type IssuerRepositoryDb struct {
@@ -22,14 +22,9 @@ func NewIssuerRepositoryDb(dbclient *pgxpool.Pool) IssuerRepositoryDb {
 	return IssuerRepositoryDb{db: dbclient}
 }
 
-func (repo IssuerRepositoryDb) FindById(id int) (*domain.Issuer, *appErr.AppError) {
-	ctx, cancel := context.WithTimeout(context.Background(), dbTimeOut)
-	defer cancel()
-
-	query := "SELECT issuers.id,company_name,balance FROM issuers INNER JOIN investors ON issuers.investor_id=investors.id WHERE issuers.id=$1"
-
+func (repo IssuerRepositoryDb) FindById(ctx *context.Context, id int) (*domain.Issuer, *appErr.AppError) {
 	var issuer domain.Issuer
-	row := repo.db.QueryRow(ctx, query, id)
+	row := repo.db.QueryRow(*ctx, "SELECT * FROM GET_ISSUER_BY_ID($1)", id)
 
 	err := row.Scan(&issuer.ID, &issuer.CompanyName, &issuer.Investor.Balance)
 	if err != nil {
@@ -42,14 +37,9 @@ func (repo IssuerRepositoryDb) FindById(id int) (*domain.Issuer, *appErr.AppErro
 	return &issuer, nil
 }
 
-func (repo IssuerRepositoryDb) FindAll() ([]domain.Issuer, *appErr.AppError) {
-	ctx, cancel := context.WithTimeout(context.Background(), dbTimeOut)
-	defer cancel()
-
-	query := "SELECT issuers.id,company_name,balance FROM issuers INNER JOIN investors ON issuers.investor_id=investors.id"
-
+func (repo IssuerRepositoryDb) FindAll(ctx *context.Context) ([]domain.Issuer, *appErr.AppError) {
 	issuers := make([]domain.Issuer, 0)
-	rows, err := repo.db.Query(ctx, query)
+	rows, err := repo.db.Query(*ctx, "SELECT * FROM GET_ISSUERS()")
 	if err != nil {
 		return nil, appErr.NewUnexpectedError("Error querying issuers : " + err.Error())
 	}
